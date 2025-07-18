@@ -12,6 +12,7 @@
     "@auth/core": "latest",
     "@auth/mongodb-adapter": "latest",
     "@aws-sdk/credential-providers": "latest",
+    "@clerk/nextjs": "latest",
     "@mongodb-js/zstd": "latest",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.1",

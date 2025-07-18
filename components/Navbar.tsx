@@ -1,13 +1,13 @@
 "use client"
 
-import { useSession, signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Zap, ArrowRight } from "lucide-react"
 import { useState } from "react"
+import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
 
 export default function Navbar() {
-  const { data: session, status } = useSession()
+  const { isSignedIn, user, isLoaded } = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -58,13 +58,13 @@ export default function Navbar() {
 
           {/* Auth Section */}
           <div className="flex items-center space-x-4">
-            {status === "loading" ? (
+            {!isLoaded ? (
               <div className="w-8 h-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-            ) : session ? (
+            ) : isSignedIn ? (
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:flex items-center space-x-2 bg-blue-50 px-3 py-1.5 rounded-full">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm text-blue-700 font-medium">{session.user?.name?.split(" ")[0]}</span>
+                  <span className="text-sm text-blue-700 font-medium">{user?.firstName || "User"}</span>
                 </div>
 
                 <Link href="/dashboard">
@@ -76,27 +76,29 @@ export default function Navbar() {
                   </Button>
                 </Link>
 
-                <Button onClick={() => signOut()} variant="ghost" className="text-gray-600 hover:text-gray-900">
-                  Sign Out
-                </Button>
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                    },
+                  }}
+                />
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button
-                  onClick={() => signIn("google")}
-                  variant="ghost"
-                  className="text-gray-600 hover:text-gray-900 hidden sm:inline-flex"
-                >
-                  Sign In
-                </Button>
+                <SignInButton mode="modal">
+                  <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hidden sm:inline-flex">
+                    Sign In
+                  </Button>
+                </SignInButton>
 
-                <Button
-                  onClick={() => signIn("google")}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 group"
-                >
-                  Get API Key
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Button>
+                <SignUpButton mode="modal">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 group">
+                    Get API Key
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Button>
+                </SignUpButton>
               </div>
             )}
 
@@ -135,17 +137,21 @@ export default function Navbar() {
                 <span className="text-sm text-gray-500">99.9% uptime</span>
               </div>
 
-              {!session && (
-                <div className="pt-4 border-t border-gray-200">
-                  <Button
-                    onClick={() => {
-                      signIn("google")
-                      setIsMenuOpen(false)
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                  >
-                    Get API Key
-                  </Button>
+              {!isSignedIn && (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <SignInButton mode="modal">
+                    <Button variant="outline" className="w-full bg-transparent" onClick={() => setIsMenuOpen(false)}>
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Get API Key
+                    </Button>
+                  </SignUpButton>
                 </div>
               )}
             </div>
