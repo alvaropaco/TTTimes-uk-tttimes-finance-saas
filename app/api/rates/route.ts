@@ -1,23 +1,31 @@
-import { NextResponse } from 'next/server';
-import { connectDB, Currency } from '@/lib/database';
-import { validateApiKey, checkRateLimit, incrementUsage } from '@/lib/api-utils';
-import { ICurrency } from '@/models/Currency';
+import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/mongodb"
+import { Currency } from "@/lib/models/Currency"
+import { withRateLimit } from "@/lib/middleware/rateLimit"
+import { convertFormula } from "@/lib/utils"
 
-export async function GET(request: Request) {
-  const validation = await validateApiKey(request);
-  if (validation instanceof NextResponse) return validation;
-  const user = validation;
+async function getRatesHandler(req: NextRequest) {
+  try {
+    await connectDB()
 
-  const rateCheck = await checkRateLimit(user._id.toString());
-  if (rateCheck instanceof NextResponse) return rateCheck;
+    const currencies = await Currency.find({})
 
-  await connectDB();
-  const currencies = await Currency.find({});
-  const rates = currencies.map((c: ICurrency) => ({
-    ...c.toObject(),
-    fórmula_atualizada: parseFloat(c.fórmula_atualizada.replace(',', '.'))
-  }));
+    const rates = currencies.map((currency) => ({
+      currency: currency.moeda,
+      code: currency.código_iso,
+      rate: convertFormula(currency.fórmula_atualizada),
+      example: currency.exemplo_de_cotação,
+      lastUpdated: currency.timestamp,
+    }))
 
-  await incrementUsage(user._id.toString());
-  return NextResponse.json(rates);
+    return NextResponse.json({
+      success: true,
+      data: rates,
+      total: rates.length,
+    })
+  } catch (error) {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
+
+export const GET = withRateLimit(getRatesHandler)

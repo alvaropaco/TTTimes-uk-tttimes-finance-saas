@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getMongoClient } from "@/lib/vercel-mongodb"
-
-function generateToken(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-}
+import connectDB from "@/lib/mongodb"
+import { User } from "@/lib/models/User"
+import { generateApiKey } from "@/lib/utils"
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,14 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name cannot be empty if provided" }, { status: 400 })
     }
 
-    // Connect directly to MongoDB
-    const client = await getMongoClient()
-    const dbName = process.env.MONGODB_DB_NAME || "tttimes-finance"
-    const db = client.db(dbName)
-    const usersCollection = db.collection("users")
+    // Connect to MongoDB
+    await connectDB()
 
     // Check if user already exists
-    const existingUser = await usersCollection.findOne({ email })
+    const existingUser = await User.findOne({ email })
     if (existingUser) {
       return NextResponse.json(
         {
@@ -47,7 +42,7 @@ export async function POST(request: NextRequest) {
           user: {
             id: existingUser._id,
             email: existingUser.email,
-            token: existingUser.token,
+            apiKey: existingUser.apiKey,
             plan: existingUser.plan,
           },
         },
@@ -55,28 +50,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate a unique token
-    const token = generateToken()
-
     // Create new user
-    const userData = {
-      name: name || email.split('@')[0], // Use provided name or email prefix as fallback
+    const user = new User({
+      name: name || email.split('@')[0],
       email,
-      token,
+      apiKey: generateApiKey(),
       plan,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
+    })
 
-    const result = await usersCollection.insertOne(userData)
-    const user = { ...userData, _id: result.insertedId }
+    await user.save()
 
     return NextResponse.json({
       success: true,
       user: {
         id: user._id,
         email: user.email,
-        token: user.token,
+        apiKey: user.apiKey,
         plan: user.plan,
       },
     }, { status: 201 })

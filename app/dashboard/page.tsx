@@ -1,192 +1,184 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { useUser } from "@clerk/nextjs"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts"
-import {
-  Activity,
-  CreditCard,
-  Calendar,
-  ExternalLink,
-  Copy,
-  CheckCircle,
-  AlertTriangle,
-  TrendingUp,
-  User,
-  HelpCircle,
-  LogOut,
-  Home,
-  BarChart3,
-  Key,
-  Bell,
-  Shield,
-} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Copy, Eye, EyeOff } from "lucide-react"
+import UsageChart from "@/components/UsageChart"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useUser } from "@clerk/nextjs";
-
-interface SubscriptionData {
-  plan: string
-  status: string
-  requests: number
-  limit: number
-  resetDate: string | null
-  customerId?: string
-  subscriptionId?: string
-}
 
 interface UsageData {
-  date: string
-  requests: number
+  todayUsage: number
+  limit: number
+  remaining: number
+  weeklyUsage: Array<{
+    date: string
+    requests: number
+  }>
 }
-
-interface EndpointData {
-  endpoint: string
-  requests: number
-}
-
-const sidebarItems = [
-  {
-    title: "Overview",
-    icon: Home,
-    url: "#overview",
-  },
-  {
-    title: "API Usage",
-    icon: BarChart3,
-    url: "#usage",
-  },
-  {
-    title: "API Keys",
-    icon: Key,
-    url: "#keys",
-  },
-  {
-    title: "Subscription",
-    icon: CreditCard,
-    url: "#subscription",
-  },
-  {
-    title: "Account",
-    icon: User,
-    url: "#account",
-  },
-  {
-    title: "Notifications",
-    icon: Bell,
-    url: "#notifications",
-  },
-  {
-    title: "Security",
-    icon: Shield,
-    url: "#security",
-  },
-  {
-    title: "Help & Support",
-    icon: HelpCircle,
-    url: "#help",
-  },
-]
 
 export default function DashboardPage() {
-  const { user, isLoaded } = useUser();
-  const [data, setData] = useState({ apiKey: '', dailyCount: 0, usageHistory: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { isSignedIn, user, isLoaded } = useUser()
+  const [usageData, setUsageData] = useState<UsageData | null>(null)
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [apiKey, setApiKey] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isLoaded && user) {
-      fetch('/api/dashboard')
-        .then(res => res.json())
-        .then(setData)
-        .catch(() => setError('Failed to load data'))
-        .finally(() => setLoading(false));
+    if (isSignedIn && user) {
+      fetchUsageData()
+      // Generate or fetch API key for the user
+      generateApiKey()
     }
-  }, [isLoaded, user]);
+  }, [isSignedIn, user])
 
-  if (!isLoaded || loading) return <div>Loading...</div>;
-  if (!user) return <div>Please sign in</div>;
-  if (error) return <div>{error}</div>;
+  const generateApiKey = async () => {
+    // This would typically be handled by your backend
+    // For now, we'll simulate an API key based on user ID
+    if (user?.id) {
+      const simulatedApiKey = `ttf_${user.id.slice(0, 8)}_${Math.random().toString(36).substring(2, 15)}`
+      setApiKey(simulatedApiKey)
+    }
+  }
+
+  const fetchUsageData = async () => {
+    try {
+      const response = await fetch("/api/dashboard/usage")
+      if (response.ok) {
+        const data = await response.json()
+        setUsageData(data.data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch usage data:", error)
+    }
+  }
+
+  const copyApiKey = async () => {
+    if (apiKey) {
+      await navigator.clipboard.writeText(apiKey)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="w-8 h-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-4">Please sign in to access your dashboard</h1>
+        <p className="text-gray-600 mb-8">
+          You need to be authenticated to view your API usage and manage your account.
+        </p>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-bold mb-8">CurrencyAPI Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>API Key</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{data.apiKey}</p>
-            <Button onClick={() => navigator.clipboard.writeText(data.apiKey)}>Copy</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Daily Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{data.dailyCount} / 100</p>
-            <Progress value={(data.dailyCount / 100) * 100} />
-          </CardContent>
-        </Card>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Welcome back, {user?.firstName || user?.fullName || "Developer"}!
+        </h1>
+        <p className="text-gray-600">Manage your API access and monitor your usage</p>
       </div>
-      <Card className="mt-6">
+
+      {/* API Key Section */}
+      <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Usage History (Last 7 Days)</CardTitle>
+          <CardTitle>Your API Key</CardTitle>
+          <CardDescription>Use this key in the Authorization header: Bearer YOUR_API_KEY</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.usageHistory}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="requests" stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 font-mono text-sm bg-gray-100 p-3 rounded border">
+              {showApiKey ? apiKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowApiKey(!showApiKey)}>
+              {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+            <Button variant="outline" size="sm" onClick={copyApiKey}>
+              <Copy className="w-4 h-4" />
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
-      <div className="mt-6">
-        <Link href="/docs">
-          <Button>API Documentation</Button>
-        </Link>
-      </div>
+
+      {/* Usage Stats */}
+      {usageData && (
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Today's Usage</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{usageData.todayUsage}</div>
+              <p className="text-xs text-gray-600">requests made today</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Remaining</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{usageData.remaining}</div>
+              <p className="text-xs text-gray-600">requests left today</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Daily Limit</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{usageData.limit}</div>
+              <p className="text-xs text-gray-600">requests per day</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Usage Chart */}
+      {usageData && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Usage History (Last 7 Days)</CardTitle>
+            <CardDescription>Track your API usage over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UsageChart data={usageData.weeklyUsage} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quick Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Links</CardTitle>
+          <CardDescription>Get started with our API</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/docs">
+              <Button variant="outline" className="w-full justify-start bg-transparent">
+                📚 API Documentation
+              </Button>
+            </Link>
+            <Button variant="outline" className="w-full justify-start bg-transparent" disabled>
+              🔧 API Testing Tool (Coming Soon)
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }

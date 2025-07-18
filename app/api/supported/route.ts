@@ -1,30 +1,30 @@
-import { NextResponse } from 'next/server';
-import { Database } from '@/lib/database';
-import { validateApiKey, checkRateLimit, incrementUsage } from '@/lib/api-utils';
+import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/mongodb"
+import { Currency } from "@/lib/models/Currency"
+import { withRateLimit } from "@/lib/middleware/rateLimit"
 
-export async function GET(request: Request) {
+async function getSupportedHandler(req: NextRequest) {
   try {
-    const validation = await validateApiKey(request);
-    if (validation instanceof NextResponse) return validation;
-    const user = validation;
+    await connectDB()
 
-    const rateCheck = await checkRateLimit(user._id?.toString() || user._id);
-    if (rateCheck instanceof NextResponse) return rateCheck;
+    const currencies = await Currency.find({}, "código_iso moeda")
 
-    // Get supported currencies from MongoDB
-    const db = await Database.getDb();
-    const currenciesCollection = db.collection('currencies');
-    const currencies = await currenciesCollection.find({}).project({ código_iso: 1 }).toArray();
-    const supported = currencies.map((c: any) => c.código_iso).filter(Boolean);
+    const supported = currencies.map((currency) => ({
+      code: currency.código_iso,
+      name: currency.moeda,
+    }))
 
-    await incrementUsage(user._id?.toString() || user._id);
-    
-    return NextResponse.json(supported);
+    // Add USD as it's the base currency
+    supported.unshift({ code: "USD", name: "US Dollar" })
+
+    return NextResponse.json({
+      success: true,
+      data: supported,
+      total: supported.length,
+    })
   } catch (error) {
-    console.error('Supported currencies API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export const GET = withRateLimit(getSupportedHandler)

@@ -1,28 +1,46 @@
-import { NextResponse } from 'next/server';
-import { connectDB, Currency } from '@/lib/database';
-import { validateApiKey, checkRateLimit, incrementUsage } from '@/lib/api-utils';
+import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/mongodb"
+import { Currency } from "@/lib/models/Currency"
+import { withRateLimit } from "@/lib/middleware/rateLimit"
+import { convertFormula } from "@/lib/utils"
 
-export async function GET(request: Request, { params }: { params: { iso: string } }) {
-  const validation = await validateApiKey(request);
-  if (validation instanceof NextResponse) return validation;
-  const user = validation;
+async function getRateHandler(req: NextRequest, { params }: { params: { iso: string } }) {
+  try {
+    const { iso } = params
 
-  const rateCheck = await checkRateLimit(user._id.toString());
-  if (rateCheck instanceof NextResponse) return rateCheck;
+    if (iso === "USD") {
+      return NextResponse.json({
+        success: true,
+        data: {
+          currency: "US Dollar",
+          code: "USD",
+          rate: 1,
+          lastUpdated: new Date().toISOString(),
+        },
+      })
+    }
 
-  const { iso } = params;
+    await connectDB()
 
-  await connectDB();
-  const currency = await Currency.findOne({ código_iso: iso });
-  if (!currency) {
-    return NextResponse.json({ error: 'Currency not found' }, { status: 404 });
+    const currency = await Currency.findOne({ código_iso: iso.toUpperCase() })
+
+    if (!currency) {
+      return NextResponse.json({ error: `Currency ${iso} not found` }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        currency: currency.moeda,
+        code: currency.código_iso,
+        rate: convertFormula(currency.fórmula_atualizada),
+        example: currency.exemplo_de_cotação,
+        lastUpdated: currency.timestamp,
+      },
+    })
+  } catch (error) {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  const rate = {
-    ...currency.toObject(),
-    fórmula_atualizada: parseFloat(currency.fórmula_atualizada.replace(',', '.'))
-  };
-
-  await incrementUsage(user._id.toString());
-  return NextResponse.json(rate);
 }
+
+export const GET = withRateLimit(getRateHandler)
