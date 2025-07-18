@@ -1,101 +1,95 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 interface PerformanceMetrics {
   loadTime: number
   renderTime: number
-  memoryUsage?: number
+  apiResponseTime: number
+  memoryUsage: number
 }
 
-/**
- * Collects basic web-vitals once the page has fully loaded.
- * Returns `null` while the metrics are being gathered.
- */
-export function usePerformanceMonitoring() {
-  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null)
+interface UsePerformanceReturn {
+  metrics: PerformanceMetrics
+  startTimer: (name: string) => void
+  endTimer: (name: string) => void
+  measureApiCall: (apiCall: () => Promise<any>) => Promise<any>
+}
 
-  useEffect(() => {
-    const measurePerformance = () => {
-      if (typeof performance === "undefined") return
+export function usePerformance(): UsePerformanceReturn {
+  const [metrics, setMetrics] = useState<PerformanceMetrics>({
+    loadTime: 0,
+    renderTime: 0,
+    apiResponseTime: 0,
+    memoryUsage: 0,
+  })
 
-      const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
-      const loadTime = navEntry.loadEventEnd - navEntry.loadEventStart
-      const renderTime = navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart
+  const [timers, setTimers] = useState<Record<string, number>>({})
 
-      let memoryUsage: number | undefined
-      // The `memory` API is experimental and only exists in Chromium-based browsers.
-      if ("memory" in performance) {
-        // @ts-ignore – memory is not yet in the TS lib
-        const usedJSHeapSize = (performance as any).memory.usedJSHeapSize
-        memoryUsage = usedJSHeapSize / 1024 / 1024 // convert to MB
-      }
-
-      const collected: PerformanceMetrics = { loadTime, renderTime, memoryUsage }
-      setMetrics(collected)
-
-      if (process.env.NODE_ENV === "development") {
-        console.table({
-          "Page Load": `${loadTime.toFixed(2)} ms`,
-          "DOM Content Loaded": `${renderTime.toFixed(2)} ms`,
-          "JS Heap Used": memoryUsage ? `${memoryUsage.toFixed(2)} MB` : "N/A",
-        })
-      }
-    }
-
-    if (document.readyState === "complete") {
-      measurePerformance()
-    } else {
-      window.addEventListener("load", measurePerformance)
-      return () => window.removeEventListener("load", measurePerformance)
-    }
+  const startTimer = useCallback((name: string) => {
+    setTimers((prev) => ({
+      ...prev,
+      [name]: performance.now(),
+    }))
   }, [])
 
-  return metrics
-}
+  const endTimer = useCallback(
+    (name: string) => {
+      const startTime = timers[name]
+      if (startTime) {
+        const endTime = performance.now()
+        const duration = endTime - startTime
 
-/**
- * Logs component render duration when unmounted.
- * Warns in dev if render took longer than one frame (~16 ms).
- */
-export function useRenderTime(componentName: string) {
-  useEffect(() => {
-    const start = performance.now()
-    return () => {
-      const duration = performance.now() - start
-      if (process.env.NODE_ENV === "development" && duration > 16) {
-        console.warn(`⚠️  Slow render detected in ${componentName}: ${duration.toFixed(2)} ms`)
+        setMetrics((prev) => ({
+          ...prev,
+          [name]: duration,
+        }))
       }
-    }
-  }, [componentName])
-}
+    },
+    [timers],
+  )
 
-/**
- * Measures the duration of an async API call.
- * Returns the wrapped result and logs slow requests (>1 s) in dev.
- */
-export function useApiPerformance() {
-  const measureApiCall = async (apiCall: () => Promise<any>, endpoint: string): Promise<any> => {
-    const start = performance.now()
-
+  const measureApiCall = useCallback(async (apiCall: () => Promise<any>) => {
+    const startTime = performance.now()
     try {
       const result = await apiCall()
-      const duration = performance.now() - start
+      const endTime = performance.now()
+      const duration = endTime - startTime
 
-      if (process.env.NODE_ENV === "development") {
-        console.log(`↪️  ${endpoint} – ${duration.toFixed(2)} ms`)
-      }
-      if (duration > 1000) {
-        console.warn(`🐢  Slow API call detected: ${endpoint} took ${duration.toFixed(2)} ms`)
-      }
+      setMetrics((prev) => ({
+        ...prev,
+        apiResponseTime: duration,
+      }))
 
       return result
     } catch (error) {
-      const duration = performance.now() - start
-      console.error(`❌  ${endpoint} failed after ${duration.toFixed(2)} ms`, error)
+      const endTime = performance.now()
+      const duration = endTime - startTime
+
+      setMetrics((prev) => ({
+        ...prev,
+        apiResponseTime: duration,
+      }))
+
       throw error
     }
-  }
+  }, [])
 
-  return { measureApiCall }
+  useEffect(() => {
+    // Measure memory usage if available
+    if ("memory" in performance) {
+      const memoryInfo = (performance as any).memory
+      setMetrics((prev) => ({
+        ...prev,
+        memoryUsage: memoryInfo.usedJSHeapSize / 1024 / 1024, // Convert to MB
+      }))
+    }
+  }, [])
+
+  return {
+    metrics,
+    startTimer,
+    endTimer,
+    measureApiCall,
+  }
 }
