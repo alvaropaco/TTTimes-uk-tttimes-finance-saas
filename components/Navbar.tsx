@@ -67,13 +67,11 @@ export default function Navbar() {
                   <span className="text-sm text-blue-700 font-medium">{user?.firstName || "User"}</span>
                 </div>
 
-                <Link href="/dashboard">
-                  <Button
-                    variant="outline"
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 bg-transparent"
-                  >
-                    Dashboard
-                  </Button>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-transparent text-blue-600 hover:bg-blue-50 hover:border-blue-300 h-10 px-4 py-2"
+                >
+                  Dashboard
                 </Link>
 
                 <UserButton
