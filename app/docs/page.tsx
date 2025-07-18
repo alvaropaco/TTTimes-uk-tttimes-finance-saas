@@ -1,5 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { ArrowRight, CheckCircle, Zap } from "lucide-react"
 
 export default function DocsPage() {
   return (
@@ -8,6 +10,33 @@ export default function DocsPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-4">API Documentation</h1>
         <p className="text-lg text-gray-600">Complete guide to using the TTTimes Finance API</p>
       </div>
+
+      {/* Quick Start */}
+      <Card className="mb-8 border-blue-200 bg-blue-50/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-blue-600" />
+            Quick Start
+          </CardTitle>
+          <CardDescription>Get up and running in under 5 minutes</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-semibold mb-2">1. Get your API key</h4>
+              <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                Sign up for free <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">2. Make your first request</h4>
+              <div className="bg-gray-900 p-3 rounded text-green-400 text-sm font-mono">
+                curl -H "Authorization: Bearer YOUR_KEY"
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Authentication */}
       <Card className="mb-8">
@@ -23,7 +52,8 @@ export default function DocsPage() {
           <div>
             <h4 className="font-semibold mb-2">Rate Limiting:</h4>
             <p className="text-gray-600">
-              Each API key is limited to 100 requests per day. Exceeding this limit will return a 429 error.
+              Each API key is limited to 100 requests per day on the free plan. Exceeding this limit will return a 429
+              error.
             </p>
           </div>
         </CardContent>
@@ -215,6 +245,207 @@ export default function DocsPage() {
 }`}
             </pre>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+          <p className="text-lg text-gray-600">Choose the plan that fits your needs. No hidden fees.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {/* Free Plan */}
+          <Card className="border-2 border-gray-200 hover:border-blue-300 transition-colors">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">Free</CardTitle>
+              <div className="text-4xl font-bold text-gray-900 mb-2">
+                $0<span className="text-lg text-gray-600">/month</span>
+              </div>
+              <CardDescription>Perfect for testing and small projects</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>100 requests/day</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>150+ currencies</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Real-time rates</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Basic support</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>API documentation</span>
+                </li>
+              </ul>
+              <Link href="/dashboard" className="block">
+                <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-gray-400 transition-colors mt-6">
+                  Get Started Free
+                </button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Pro Plan */}
+          <Card className="border-2 border-blue-500 relative bg-gradient-to-br from-blue-50 to-purple-50">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                Most Popular
+              </span>
+            </div>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">Pro</CardTitle>
+              <div className="mb-2">
+                <div className="text-4xl font-bold text-gray-900">
+                  $0.022<span className="text-lg text-gray-600">/request</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Pay as you scale</p>
+              </div>
+              <CardDescription>For growing businesses and applications</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Unlimited requests</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>150+ currencies</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Historical data</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Priority support</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>99.9% SLA</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Advanced analytics</span>
+                </li>
+              </ul>
+              <Link href="/dashboard" className="block">
+                <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow mt-6">
+                  Start Free Trial
+                </button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Enterprise Plan */}
+          <Card className="border-2 border-gray-200 hover:border-blue-300 transition-colors">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">Enterprise</CardTitle>
+              <div className="text-4xl font-bold text-gray-900 mb-2">Custom</div>
+              <CardDescription>For large-scale applications</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Volume discounts</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Dedicated support</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>Custom integrations</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>99.99% SLA</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>On-premise options</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span>White-label solutions</span>
+                </li>
+              </ul>
+              <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-gray-400 transition-colors mt-6">
+                Get in Touch
+              </button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Pricing FAQ */}
+        <div className="mt-16 max-w-3xl mx-auto">
+          <h3 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h3>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="font-semibold mb-2">How is usage calculated?</h4>
+                <p className="text-gray-600">
+                  Each API request counts as one usage unit. This includes all endpoints: conversion, rates, and
+                  supported currencies.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="font-semibold mb-2">What happens if I exceed my free limit?</h4>
+                <p className="text-gray-600">
+                  Your requests will be blocked until the next day. Upgrade to Pro for unlimited requests with
+                  pay-per-use pricing.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="font-semibold mb-2">Can I change plans anytime?</h4>
+                <p className="text-gray-600">
+                  Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="font-semibold mb-2">Do you offer volume discounts?</h4>
+                <p className="text-gray-600">
+                  Yes, Enterprise customers can get significant volume discounts. Contact us for custom pricing based on
+                  your usage.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <Card className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+        <CardContent className="text-center py-12">
+          <h3 className="text-3xl font-bold mb-4">Ready to get started?</h3>
+          <p className="text-xl text-blue-100 mb-8">Join thousands of developers using our currency API</p>
+          <Link href="/dashboard">
+            <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center">
+              Get your free API key
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
+          </Link>
         </CardContent>
       </Card>
     </div>
