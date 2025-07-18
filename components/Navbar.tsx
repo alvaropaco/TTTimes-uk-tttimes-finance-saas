@@ -10,6 +10,14 @@ export default function Navbar() {
   const { user, isLoaded } = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
+  const scrollToPricing = () => {
+    const pricingSection = document.getElementById("pricing")
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: "smooth" })
+    }
+    setIsMenuOpen(false)
+  }
+
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,13 +50,13 @@ export default function Navbar() {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
             </Link>
 
-            <Link
-              href="#pricing"
+            <button
+              onClick={scrollToPricing}
               className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200 relative group"
             >
               Pricing
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-200 group-hover:w-full"></span>
-            </Link>
+            </button>
 
             <div className="flex items-center space-x-1 text-sm text-gray-500">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -122,13 +130,12 @@ export default function Navbar() {
                 Documentation
               </Link>
 
-              <Link
-                href="#pricing"
-                className="block text-gray-600 hover:text-blue-600 font-medium py-2"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={scrollToPricing}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 text-left w-full"
               >
                 Pricing
-              </Link>
+              </button>
 
               <div className="flex items-center space-x-2 py-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
