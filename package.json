@@ -6,7 +6,12 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "test": "cd tests && npm install && node run-all-tests.js",
+    "test:api": "cd tests && npm install && node api-tests.js",
+    "test:auth": "cd tests && npm install && node auth-tests.js",
+    "test:performance": "cd tests && npm install && node performance-tests.js",
+    "test:install": "cd tests && npm install"
   },
   "dependencies": {
     "@auth/core": "latest",
