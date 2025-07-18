@@ -85,7 +85,8 @@ export class Database {
     return this.client
   }
 
-  private static async getDb(): Promise<Db> {
+  // Expose getDb method publicly
+  static async getDb(): Promise<Db> {
     if (!this.db) {
       const client = await this.getClient()
       this.db = client.db(process.env.MONGODB_DB_NAME || "zodii")
@@ -428,6 +429,14 @@ export class Database {
       this.client = null
       this.db = null
     }
+  }
+
+  static async closeConnection(): Promise<void> {
+    return this.close()
+  }
+
+  static async getUserByEmail(email: string): Promise<IUser | null> {
+    return this.findUserByEmail(email)
   }
 }
 

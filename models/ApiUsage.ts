@@ -14,4 +14,5 @@ export type ApiUsageType = {
   count: Number,
 }
 
-export const ApiUsage = mongoose.model<ApiUsageType>('ApiUsage', apiUsageSchema);
+// Check if model already exists to prevent recompilation error
+export const ApiUsage = mongoose.models.ApiUsage || mongoose.model<ApiUsageType>('ApiUsage', apiUsageSchema);

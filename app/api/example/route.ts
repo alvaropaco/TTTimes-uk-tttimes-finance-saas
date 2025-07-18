@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
   try {
     // Example API response
     const exampleData = {
+      success: true,
       message: "Hello from your SaaS API!",
       timestamp: new Date().toISOString(),
       user_id: authResult._id,
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
     
     // Example POST endpoint - customize this for your needs
     const response = {
+      success: true,
       message: "Data received successfully",
       timestamp: new Date().toISOString(),
       user_id: authResult._id,

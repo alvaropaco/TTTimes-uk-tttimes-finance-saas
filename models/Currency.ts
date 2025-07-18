@@ -16,4 +16,5 @@ const currencySchema = new Schema({
   timestamp: { type: Date, required: true }
 });
 
-export const Currency = mongoose.model<ICurrency>('Currency', currencySchema);
+// Check if model already exists to prevent recompilation error
+export const Currency = mongoose.models.Currency || mongoose.model<ICurrency>('Currency', currencySchema);
