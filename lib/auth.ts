@@ -52,3 +52,16 @@ export async function getOrCreateUser() {
     return null
   }
 }
+
+// -----------------------------------------------------------------------------
+// ⚠️ Temporary stub to satisfy legacy NextAuth import in /api/auth route.
+// Remove the [...nextauth] API route (and this stub) once Clerk migration
+// is totally finished.
+// -----------------------------------------------------------------------------
+import type { NextAuthOptions } from "next-auth"
+
+export const authOptions: NextAuthOptions = {
+  providers: [], // no providers – not used anymore
+  session: { strategy: "jwt" }, // minimal valid field
+  pages: { signIn: "/auth/signin" },
+}
