@@ -178,6 +178,10 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  Real-time rates
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
                   Basic support
                 </li>
               </ul>
@@ -195,13 +199,20 @@ export default function HomePage() {
                 </span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
-              <p className="text-4xl font-bold text-gray-900 mb-6">
-                $29<span className="text-lg text-gray-600">/month</span>
-              </p>
+              <div className="mb-6">
+                <p className="text-4xl font-bold text-gray-900">
+                  $0.022<span className="text-lg text-gray-600">/request</span>
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Pay as you scale</p>
+              </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  10,000 requests/day
+                  Unlimited requests
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  150+ currencies
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -210,6 +221,10 @@ export default function HomePage() {
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
                   Priority support
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  99.9% SLA
                 </li>
               </ul>
               <Link href="/dashboard">
@@ -225,7 +240,7 @@ export default function HomePage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  Unlimited requests
+                  Volume discounts
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -233,11 +248,19 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  SLA guarantee
+                  Custom integrations
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  99.99% SLA
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  On-premise options
                 </li>
               </ul>
               <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-gray-400 transition-colors">
-                Contact Sales
+                Get in Touch
               </button>
             </div>
           </div>
