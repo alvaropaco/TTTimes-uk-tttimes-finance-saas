@@ -6,18 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Copy, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Line,
-  AreaChart,
-  Area,
-} from "recharts"
+import { AreaChart } from "@/components/charts/AreaChart"
+import { BarChart } from "@/components/charts/BarChart"
 
 interface UsageData {
   todayUsage: number
@@ -44,14 +34,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (isSignedIn && user) {
       fetchUsageData()
-      // Generate or fetch API key for the user
       generateApiKey()
     }
   }, [isSignedIn, user])
 
   const generateApiKey = async () => {
-    // This would typically be handled by your backend
-    // For now, we'll simulate an API key based on user ID
     if (user?.id) {
       const simulatedApiKey = `ttf_${user.id.slice(0, 8)}_${Math.random().toString(36).substring(2, 15)}`
       setApiKey(simulatedApiKey)
@@ -69,7 +56,7 @@ export default function DashboardPage() {
       console.error("Failed to fetch usage data:", error)
     }
 
-    // Simulate cost data for now
+    // Simulate cost data
     const mockCostData = [
       { month: "Jan", cost: 45.67, requests: 2076 },
       { month: "Feb", cost: 78.23, requests: 3556 },
@@ -183,49 +170,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={usageData.weeklyUsage}>
-                  <defs>
-                    <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#6b7280"
-                    fontSize={12}
-                    tickFormatter={(value) =>
-                      new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                    }
-                  />
-                  <YAxis stroke="#6b7280" fontSize={12} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                    }}
-                    labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    }
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="requests"
-                    stroke="#3B82F6"
-                    fillOpacity={1}
-                    fill="url(#colorRequests)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <AreaChart data={usageData.weeklyUsage} />
             </div>
           </CardContent>
         </Card>
@@ -240,49 +185,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={costData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
-                  <YAxis
-                    yAxisId="cost"
-                    orientation="left"
-                    stroke="#6b7280"
-                    fontSize={12}
-                    tickFormatter={(value) => `$${value}`}
-                  />
-                  <YAxis
-                    yAxisId="requests"
-                    orientation="right"
-                    stroke="#6b7280"
-                    fontSize={12}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                    }}
-                    formatter={(value, name) => {
-                      if (name === "cost") return [`$${value}`, "Total Cost"]
-                      if (name === "requests") return [`${value.toLocaleString()}`, "Requests"]
-                      return [value, name]
-                    }}
-                  />
-                  <Bar yAxisId="cost" dataKey="cost" fill="#3B82F6" radius={[4, 4, 0, 0]} name="cost" />
-                  <Line
-                    yAxisId="requests"
-                    type="monotone"
-                    dataKey="requests"
-                    stroke="#10B981"
-                    strokeWidth={3}
-                    dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
-                    name="requests"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChart data={costData} />
             </div>
 
             {/* Cost Summary */}
