@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server"
+import type { NextRequest, NextResponse } from "next/server"
+import { generateApiKey as generateApiKeyUtil } from "@/lib/utils"
 
 export function securityHeaders(response: NextResponse): NextResponse {
   // Content Security Policy
@@ -12,7 +13,7 @@ export function securityHeaders(response: NextResponse): NextResponse {
       "img-src 'self' data: https:",
       "connect-src 'self' https://api.currencyapi.com",
       "frame-src https://accounts.google.com",
-    ].join("; ")
+    ].join("; "),
   )
 
   // Security headers
@@ -63,3 +64,5 @@ export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
+
+export { generateApiKeyUtil as generateApiKey }
