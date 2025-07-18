@@ -1,8 +1,11 @@
 import { currentUser } from "@clerk/nextjs/server"
-import connectDB from "./mongodb"
-import { User } from "./models/User"
-import { generateApiKey } from "./utils"
+import connectDB from "@/lib/mongodb"
+import { User } from "@/lib/models/User"
+import { generateApiKey } from "@/lib/security"
 import type { NextAuthOptions } from "next-auth"
+
+// Stub export for legacy NextAuth route compatibility
+export const authOptions: NextAuthOptions = {}
 
 export async function getOrCreateUser() {
   try {
@@ -14,61 +17,29 @@ export async function getOrCreateUser() {
 
     await connectDB()
 
-    let dbUser = await User.findOne({
-      $or: [{ clerkId: clerkUser.id }, { email: clerkUser.emailAddresses[0]?.emailAddress }],
-    })
+    // Try to find existing user by Clerk ID
+    let user = await User.findOne({ clerkId: clerkUser.id })
 
-    if (!dbUser) {
-      // Create new user
-      dbUser = new User({
+    if (!user) {
+      // Create new user if doesn't exist
+      user = new User({
         clerkId: clerkUser.id,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
-        image: clerkUser.imageUrl,
+        name:
+          clerkUser.firstName && clerkUser.lastName
+            ? `${clerkUser.firstName} ${clerkUser.lastName}`
+            : clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress,
         apiKey: generateApiKey(),
         plan: "free",
         createdAt: new Date(),
       })
-      await dbUser.save()
-    } else if (!dbUser.clerkId) {
-      // Update existing user with Clerk ID
-      dbUser.clerkId = clerkUser.id
-      if (!dbUser.apiKey) {
-        dbUser.apiKey = generateApiKey()
-      }
-      await dbUser.save()
+
+      await user.save()
     }
 
-    return {
-      id: dbUser._id.toString(),
-      clerkId: dbUser.clerkId,
-      email: dbUser.email,
-      name: dbUser.name,
-      image: dbUser.image,
-      apiKey: dbUser.apiKey,
-      plan: dbUser.plan,
-    }
+    return user
   } catch (error) {
-    console.error("Error getting or creating user:", error)
+    console.error("Error in getOrCreateUser:", error)
     return null
   }
-}
-
-// -----------------------------------------------------------------------------
-// ⚠️ Temporary stub to satisfy legacy NextAuth import in /api/auth route.
-// Remove the [...nextauth] API route (and this stub) once Clerk migration
-// is totally finished.
-// -----------------------------------------------------------------------------
-/**
- * Stub export so `/app/api/auth/[...nextauth]/route.ts` still compiles
- * while you finish migrating to Clerk.
- *
- * ➡  Delete this file after removing the legacy NextAuth route.
- */
-export const authOptions: NextAuthOptions = {
-  providers: [],
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
-  },
 }
