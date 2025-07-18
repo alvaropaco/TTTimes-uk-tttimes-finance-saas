@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server"
 import connectDB from "./mongodb"
 import { User } from "./models/User"
 import { generateApiKey } from "./utils"
+import type { NextAuthOptions } from "next-auth"
 
 export async function getOrCreateUser() {
   try {
@@ -58,15 +59,13 @@ export async function getOrCreateUser() {
 // Remove the [...nextauth] API route (and this stub) once Clerk migration
 // is totally finished.
 // -----------------------------------------------------------------------------
-import type { NextAuthOptions } from "next-auth"
-
 /**
- * Temporary stub to satisfy legacy imports while the codebase is being
- * migrated from NextAuth to Clerk.  Remove this file after deleting
- * /app/api/auth/[...nextauth]/route.ts and all other NextAuth code.
+ * Stub export so `/app/api/auth/[...nextauth]/route.ts` still compiles
+ * while you finish migrating to Clerk.
+ *
+ * ➡  Delete this file after removing the legacy NextAuth route.
  */
-
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [],
   callbacks: {},
-} as unknown as NextAuthOptions
+}
