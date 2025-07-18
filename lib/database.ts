@@ -1,6 +1,9 @@
 import { type Collection, type Db, type MongoClient, ObjectId } from "mongodb"
 import { Pool } from "pg"
 import { getMongoClient } from "./vercel-mongodb"
+import mongoose from 'mongoose';
+import { config } from './config';
+import { Currency } from '../models/Currency';
 
 // PostgreSQL Pool (for compatibility)
 export const pool = new Pool({
@@ -11,7 +14,7 @@ export const pool = new Pool({
 export default pool
 
 // MongoDB Database Interface
-interface User {
+interface IUser {
   _id?: ObjectId
   name: string
   email: string
@@ -25,7 +28,7 @@ interface User {
   organizationDomain?: string
 }
 
-interface Organization {
+interface IOrganization {
   _id?: ObjectId
   name: string
   domain: string
@@ -34,7 +37,7 @@ interface Organization {
   updatedAt?: Date
 }
 
-interface UsageRecord {
+interface IUsageRecord {
   _id?: ObjectId
   userId: ObjectId
   endpoint: string
@@ -46,7 +49,7 @@ interface UsageRecord {
   createdAt?: Date
 }
 
-interface ApiUsage {
+interface IApiUsage {
   _id?: ObjectId
   userId?: ObjectId
   endpoint: string
@@ -90,27 +93,27 @@ export class Database {
     return this.db
   }
 
-  private static async getUsersCollection(): Promise<Collection<User>> {
+  private static async getUsersCollection(): Promise<Collection<IUser>> {
     const db = await this.getDb()
-    return db.collection<User>("users")
+    return db.collection<IUser>("users")
   }
 
-  private static async getOrganizationsCollection(): Promise<Collection<Organization>> {
+  private static async getOrganizationsCollection(): Promise<Collection<IOrganization>> {
     const db = await this.getDb()
-    return db.collection<Organization>("organizations")
+    return db.collection<IOrganization>("organizations")
   }
 
-  private static async getUsageCollection(): Promise<Collection<UsageRecord>> {
+  private static async getUsageCollection(): Promise<Collection<IUsageRecord>> {
     const db = await this.getDb()
-    return db.collection<UsageRecord>("usage")
+    return db.collection<IUsageRecord>("usage")
   }
 
   // User Methods
-  static async createUser(userData: Omit<User, "_id" | "createdAt" | "updatedAt">): Promise<User> {
+  static async createUser(userData: Omit<IUser, '_id' | 'createdAt' | 'updatedAt'>): Promise<IUser> {
     const users = await this.getUsersCollection()
     const now = new Date()
 
-    const user: User = {
+    const user: IUser = {
       ...userData,
       createdAt: now,
       updatedAt: now,
@@ -120,21 +123,22 @@ export class Database {
     return { ...user, _id: result.insertedId }
   }
 
-  static async findUserByEmail(email: string): Promise<User | null> {
+  static async findUserByEmail(email: string): Promise<IUser | null> {
     const users = await this.getUsersCollection()
     return await users.findOne({ email })
   }
 
-  static async findUserByToken(token: string): Promise<User | null> {
+  static async findUserByToken(token: string | undefined): Promise<IUser | null> {
+    if (!token) return null;
     const users = await this.getUsersCollection()
     return await users.findOne({ token })
   }
 
-  static async getUserByToken(token: string): Promise<User | null> {
+  static async getUserByToken(token: string | undefined): Promise<IUser | null> {
     return await this.findUserByToken(token)
   }
 
-  static async updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
+  static async updateUser(userId: string, updates: Partial<IUser>): Promise<IUser | null> {
     const users = await this.getUsersCollection()
     const result = await users.findOneAndUpdate(
       { _id: new ObjectId(userId) },
@@ -152,12 +156,12 @@ export class Database {
 
   // Organization Methods
   static async createOrganization(
-    orgData: Omit<Organization, "_id" | "createdAt" | "updatedAt">,
-  ): Promise<Organization> {
+    orgData: Omit<IOrganization, "_id" | "createdAt" | "updatedAt">,
+  ): Promise<IOrganization> {
     const organizations = await this.getOrganizationsCollection()
     const now = new Date()
 
-    const organization: Organization = {
+    const organization: IOrganization = {
       ...orgData,
       createdAt: now,
       updatedAt: now,
@@ -167,7 +171,7 @@ export class Database {
     return { ...organization, _id: result.insertedId }
   }
 
-  static async findOrganizationByDomain(domain: string): Promise<Organization | null> {
+  static async findOrganizationByDomain(domain: string): Promise<IOrganization | null> {
     const organizations = await this.getOrganizationsCollection()
     return await organizations.findOne({ domain })
   }
@@ -189,7 +193,7 @@ export class Database {
     })
   }
 
-  static async getUserUsage(userId: string, startDate?: Date, endDate?: Date): Promise<UsageRecord[]> {
+  static async getUserUsage(userId: string, startDate?: Date, endDate?: Date): Promise<IUsageRecord[]> {
     const usage = await this.getUsageCollection()
     const query: any = { userId: new ObjectId(userId) }
 
@@ -209,8 +213,8 @@ export class Database {
 
   static async getApiUsageStats() {
     const db = await this.getDb()
-    const usageCollection = db.collection<ApiUsage>("api_usage")
-    const userCollection = db.collection<User>("users")
+    const usageCollection = db.collection<IApiUsage>("api_usage")
+    const userCollection = db.collection<IUser>("users")
 
     // Get total users
     const totalUsers = await userCollection.countDocuments()
@@ -266,8 +270,8 @@ export class Database {
 
   static async getAnalytics() {
     const db = await this.getDb()
-    const usageCollection = db.collection<ApiUsage>("api_usage")
-    const userCollection = db.collection<User>("users")
+    const usageCollection = db.collection<IApiUsage>("api_usage")
+    const userCollection = db.collection<IUser>("users")
 
     // Get total users
     const totalUsers = await userCollection.countDocuments()
@@ -405,11 +409,11 @@ export class Database {
     }
   }
 
-  static async logApiUsage(usageData: Partial<ApiUsage>): Promise<void> {
+  static async logApiUsage(usageData: Partial<IApiUsage>): Promise<void> {
     const db = await this.getDb()
-    const collection = db.collection<ApiUsage>("api_usage")
+    const collection = db.collection<IApiUsage>("api_usage")
     
-    const usage: ApiUsage = {
+    const usage: IApiUsage = {
       endpoint: usageData.endpoint || '',
       ...usageData,
       createdAt: usageData.createdAt || new Date(),
@@ -428,10 +432,25 @@ export class Database {
 }
 
 // Named exports for backward compatibility
-export async function getUserByToken(token: string): Promise<User | null> {
+export async function getUserByToken(token: string | undefined): Promise<IUser | null> {
+  if (!token) return null;
   return Database.findUserByToken(token)
 }
 
 export async function logApiUsage(usageData: any): Promise<void> {
   return Database.logApiUsage(usageData)
 }
+
+async function connectDB() {
+  if (mongoose.connection.readyState >= 1) return;
+  
+  if (!config.database.url) {
+    throw new Error('Database URL is not configured. Please set DATABASE_URL or MONGODB_URI environment variable.');
+  }
+  
+  return mongoose.connect(config.database.url, { dbName: config.database.name });
+}
+
+export { connectDB, Currency };
+export type { IUser as User, IApiUsage as ApiUsage };
+export type { ICurrency } from '../models/Currency';

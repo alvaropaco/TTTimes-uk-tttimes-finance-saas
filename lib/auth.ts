@@ -8,6 +8,8 @@ export interface AuthenticatedUser {
   token: string
   plan?: string
   createdAt?: Date
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
 }
 
 export async function validateToken(request: NextRequest): Promise<AuthenticatedUser | NextResponse> {
@@ -47,6 +49,8 @@ export async function validateToken(request: NextRequest): Promise<Authenticated
       token: user.token,
       plan: user.plan,
       createdAt: user.createdAt,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
     }
   } catch (error) {
     console.error("Token validation error:", error)

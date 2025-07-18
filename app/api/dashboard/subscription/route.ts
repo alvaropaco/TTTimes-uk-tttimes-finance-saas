@@ -2,6 +2,9 @@ import { type NextRequest, NextResponse } from "next/server"
 import { validateToken } from "@/lib/auth"
 import { Database } from "@/lib/database"
 
+// Force dynamic rendering for this route since it uses request headers
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // Validate the user token
@@ -37,7 +40,9 @@ export async function GET(request: NextRequest) {
     endOfMonth.setDate(0)
     endOfMonth.setHours(23, 59, 59, 999)
 
-    const usageCount = await Database.getUserUsageCount(user._id!, startOfMonth, endOfMonth)
+    // Get user usage data for current month
+    const usageData = await Database.getUserUsage(user._id!.toString(), startOfMonth, endOfMonth)
+    const usageCount = usageData.length
 
     // Determine limits based on plan
     let limit = 100 // free plan default

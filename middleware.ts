@@ -1,6 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest) {
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/signin(.*)',
+  '/signup(.*)',
+  '/api/rates',
+  '/api/convert',
+  '/api/supported',
+  '/api/rate/(.*)',
+  '/api/webhooks/clerk',
+  '/api/health'
+])
+
+export default clerkMiddleware(async (auth, request) => {
   // Handle CORS for API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const response = NextResponse.next()
@@ -18,10 +33,30 @@ export function middleware(request: NextRequest) {
     
     return response
   }
-  
-  return NextResponse.next()
-}
+
+  // Debug logging for authentication issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Middleware - Path:', request.nextUrl.pathname)
+    console.log('Middleware - Is Public Route:', isPublicRoute(request))
+  }
+
+  // Protect non-public routes
+  if (!isPublicRoute(request)) {
+    try {
+      await auth.protect()
+    } catch (error) {
+      console.error('Auth protection error:', error)
+      // Redirect to sign-in if authentication fails
+      return NextResponse.redirect(new URL('/sign-in', request.url))
+    }
+  }
+})
 
 export const config = {
-  matcher: '/api/:path*'
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ]
 }

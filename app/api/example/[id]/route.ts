@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { validateToken } from "@/lib/auth"
 
+// Force dynamic rendering for this route since it uses request headers
+export const dynamic = 'force-dynamic'
+
 // CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -67,7 +70,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: item,
-      user_id: authResult.user.id,
+      user_id: authResult._id,
       timestamp: new Date().toISOString()
     }, {
       status: 200,

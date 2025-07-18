@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { validateToken } from "@/lib/auth"
 import { TranslationCacheService } from "@/lib/translation-cache"
 
+// Force dynamic rendering for this route since it uses request headers
+export const dynamic = 'force-dynamic'
+
 // CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

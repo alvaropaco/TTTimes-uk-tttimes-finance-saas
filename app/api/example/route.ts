@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { validateToken } from "@/lib/auth"
 
+// Force dynamic rendering for this route since it uses request headers
+export const dynamic = 'force-dynamic'
+
 // CORS headers for the example API
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
     const exampleData = {
       message: "Hello from your SaaS API!",
       timestamp: new Date().toISOString(),
-      user_id: authResult.user.id,
+      user_id: authResult._id,
       data: {
         example_field: "This is sample data",
         another_field: "You can customize this API endpoint",
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
     const response = {
       message: "Data received successfully",
       timestamp: new Date().toISOString(),
-      user_id: authResult.user.id,
+      user_id: authResult._id,
       received_data: body,
       processed: true
     }

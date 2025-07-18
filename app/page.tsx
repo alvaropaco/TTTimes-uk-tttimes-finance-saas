@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { AnimatedCodeBlock } from "@/components/ui/animated-code-block"
 import { Check, Star, Zap, Crown, Rocket, Code, Database, Shield } from "lucide-react"
 
 export default function Home() {
@@ -233,6 +234,35 @@ export default function Home() {
                 </Link>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* API Example Section */}
+      <section className="py-24 bg-gradient-to-br from-gray-50 to-slate-100 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent">
+              Simple API Integration
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light">
+              Get started with our currency conversion API in just a few lines of code
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <AnimatedCodeBlock 
+              lines={[
+                'curl `https://currencyapi.com/api/convert?from=BRL&to=USD&amount=1000`  \\',
+                '  -H "Authorization: Bearer YOUR_API_KEY"',
+                '',
+                'const res = await fetch("/api/convert?from=BRL&to=USD&amount=1000", {',
+                '  headers: { Authorization: "Bearer YOUR_API_KEY" }',
+                '});'
+              ]}
+              theme="dark"
+              className="mx-auto"
+            />
           </div>
         </div>
       </section>

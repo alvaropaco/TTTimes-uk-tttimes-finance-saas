@@ -3,6 +3,9 @@ import { validateToken } from "@/lib/auth"
 import * as deepl from 'deepl-node'
 import { TranslationCacheService } from "@/lib/translation-cache"
 
+// Force dynamic rendering for this route since it uses request headers
+export const dynamic = 'force-dynamic'
+
 // CORS headers for the translation API
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
