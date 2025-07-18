@@ -5,8 +5,19 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Copy, Eye, EyeOff } from "lucide-react"
-import UsageChart from "@/components/UsageChart"
 import Link from "next/link"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Line,
+  AreaChart,
+  Area,
+} from "recharts"
 
 interface UsageData {
   todayUsage: number
@@ -24,6 +35,11 @@ export default function DashboardPage() {
   const [showApiKey, setShowApiKey] = useState(false)
   const [copied, setCopied] = useState(false)
   const [apiKey, setApiKey] = useState<string | null>(null)
+  const [costData, setCostData] = useState<Array<{
+    month: string
+    cost: number
+    requests: number
+  }> | null>(null)
 
   useEffect(() => {
     if (isSignedIn && user) {
@@ -52,6 +68,17 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Failed to fetch usage data:", error)
     }
+
+    // Simulate cost data for now
+    const mockCostData = [
+      { month: "Jan", cost: 45.67, requests: 2076 },
+      { month: "Feb", cost: 78.23, requests: 3556 },
+      { month: "Mar", cost: 92.15, requests: 4189 },
+      { month: "Apr", cost: 156.78, requests: 7126 },
+      { month: "May", cost: 203.45, requests: 9248 },
+      { month: "Jun", cost: 267.89, requests: 12177 },
+    ]
+    setCostData(mockCostData)
   }
 
   const copyApiKey = async () => {
@@ -147,15 +174,143 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Usage Chart */}
+      {/* API Usage Over Time Chart */}
       {usageData && (
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Usage History (Last 7 Days)</CardTitle>
-            <CardDescription>Track your API usage over time</CardDescription>
+            <CardTitle>API Usage Over Time</CardTitle>
+            <CardDescription>Daily API requests for the last 7 days</CardDescription>
           </CardHeader>
           <CardContent>
-            <UsageChart data={usageData.weeklyUsage} />
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={usageData.weeklyUsage}>
+                  <defs>
+                    <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickFormatter={(value) =>
+                      new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                    }
+                  />
+                  <YAxis stroke="#6b7280" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                    labelFormatter={(value) =>
+                      new Date(value).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      })
+                    }
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="requests"
+                    stroke="#3B82F6"
+                    fillOpacity={1}
+                    fill="url(#colorRequests)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Monthly Cost Analysis */}
+      {costData && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Monthly Cost Analysis</CardTitle>
+            <CardDescription>Total API costs and request volume by month</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={costData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
+                  <YAxis
+                    yAxisId="cost"
+                    orientation="left"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickFormatter={(value) => `$${value}`}
+                  />
+                  <YAxis
+                    yAxisId="requests"
+                    orientation="right"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                    formatter={(value, name) => {
+                      if (name === "cost") return [`$${value}`, "Total Cost"]
+                      if (name === "requests") return [`${value.toLocaleString()}`, "Requests"]
+                      return [value, name]
+                    }}
+                  />
+                  <Bar yAxisId="cost" dataKey="cost" fill="#3B82F6" radius={[4, 4, 0, 0]} name="cost" />
+                  <Line
+                    yAxisId="requests"
+                    type="monotone"
+                    dataKey="requests"
+                    stroke="#10B981"
+                    strokeWidth={3}
+                    dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
+                    name="requests"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Cost Summary */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  ${costData.reduce((sum, month) => sum + month.cost, 0).toFixed(2)}
+                </div>
+                <div className="text-sm text-blue-600">Total Cost (6 months)</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {costData.reduce((sum, month) => sum + month.requests, 0).toLocaleString()}
+                </div>
+                <div className="text-sm text-green-600">Total Requests</div>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  $
+                  {(
+                    (costData.reduce((sum, month) => sum + month.cost, 0) /
+                      costData.reduce((sum, month) => sum + month.requests, 0)) *
+                    1000
+                  ).toFixed(3)}
+                </div>
+                <div className="text-sm text-purple-600">Avg Cost per 1K requests</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
