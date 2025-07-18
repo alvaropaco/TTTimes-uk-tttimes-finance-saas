@@ -60,8 +60,13 @@ export async function getOrCreateUser() {
 // -----------------------------------------------------------------------------
 import type { NextAuthOptions } from "next-auth"
 
-export const authOptions: NextAuthOptions = {
-  providers: [], // no providers – not used anymore
-  session: { strategy: "jwt" }, // minimal valid field
-  pages: { signIn: "/auth/signin" },
-}
+/**
+ * Temporary stub to satisfy legacy imports while the codebase is being
+ * migrated from NextAuth to Clerk.  Remove this file after deleting
+ * /app/api/auth/[...nextauth]/route.ts and all other NextAuth code.
+ */
+
+export const authOptions = {
+  providers: [],
+  callbacks: {},
+} as unknown as NextAuthOptions
