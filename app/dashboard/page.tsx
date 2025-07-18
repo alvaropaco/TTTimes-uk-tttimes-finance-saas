@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession } from "next-auth/react"
+import { useUser } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,16 +19,28 @@ interface UsageData {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { isSignedIn, user, isLoaded } = useUser()
   const [usageData, setUsageData] = useState<UsageData | null>(null)
   const [showApiKey, setShowApiKey] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [apiKey, setApiKey] = useState<string | null>(null)
 
   useEffect(() => {
-    if (session) {
+    if (isSignedIn && user) {
       fetchUsageData()
+      // Generate or fetch API key for the user
+      generateApiKey()
     }
-  }, [session])
+  }, [isSignedIn, user])
+
+  const generateApiKey = async () => {
+    // This would typically be handled by your backend
+    // For now, we'll simulate an API key based on user ID
+    if (user?.id) {
+      const simulatedApiKey = `ttf_${user.id.slice(0, 8)}_${Math.random().toString(36).substring(2, 15)}`
+      setApiKey(simulatedApiKey)
+    }
+  }
 
   const fetchUsageData = async () => {
     try {
@@ -43,14 +55,14 @@ export default function DashboardPage() {
   }
 
   const copyApiKey = async () => {
-    if (session?.user?.apiKey) {
-      await navigator.clipboard.writeText(session.user.apiKey)
+    if (apiKey) {
+      await navigator.clipboard.writeText(apiKey)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
   }
 
-  if (status === "loading") {
+  if (!isLoaded) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="w-8 h-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
@@ -58,11 +70,13 @@ export default function DashboardPage() {
     )
   }
 
-  if (!session) {
+  if (!isSignedIn) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Please sign in to access your dashboard</h1>
-        <Button>Sign In</Button>
+        <p className="text-gray-600 mb-8">
+          You need to be authenticated to view your API usage and manage your account.
+        </p>
       </div>
     )
   }
@@ -70,7 +84,9 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {session.user?.name}!</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Welcome back, {user?.firstName || user?.fullName || "Developer"}!
+        </h1>
         <p className="text-gray-600">Manage your API access and monitor your usage</p>
       </div>
 
@@ -83,7 +99,7 @@ export default function DashboardPage() {
         <CardContent>
           <div className="flex items-center gap-2">
             <div className="flex-1 font-mono text-sm bg-gray-100 p-3 rounded border">
-              {showApiKey ? session.user?.apiKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
+              {showApiKey ? apiKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowApiKey(!showApiKey)}>
               {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
