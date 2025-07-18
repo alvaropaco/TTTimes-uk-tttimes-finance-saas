@@ -1,0 +1,24 @@
+{
+  "name": "api-tests",
+  "version": "1.0.0",
+  "description": "Testes de API para o sistema de finanças",
+  "main": "api-tests.js",
+  "scripts": {
+    "test": "node api-tests.js",
+    "test:auth": "node tests/auth-tests.js",
+    "test:translation": "node tests/translation-tests.js",
+    "test:dashboard": "node tests/dashboard-tests.js",
+    "test:stripe": "node tests/stripe-tests.js",
+    "test:performance": "node tests/performance-tests.js",
+    "test:all": "npm run test && npm run test:auth && npm run test:translation && npm run test:dashboard && npm run test:stripe && npm run test:performance"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "keywords": ["api", "tests", "nextjs", "finance"],
+  "author": "Finance SaaS Team",
+  "license": "MIT"
+}

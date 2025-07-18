@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
+  plan: {
+    type: String,
+    enum: ["free", "pro", "enterprise"],
+    default: "free",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

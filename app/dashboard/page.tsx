@@ -1,6 +1,6 @@
 "use client"
 
-import { useUser } from "@clerk/nextjs"
+import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ interface UsageData {
 }
 
 export default function DashboardPage() {
-  const { isSignedIn, user, isLoaded } = useUser()
+  const { data: session, status } = useSession()
   const [usageData, setUsageData] = useState<UsageData | null>(null)
   const [showApiKey, setShowApiKey] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -32,16 +32,21 @@ export default function DashboardPage() {
   }> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const isSignedIn = !!session
+  const isLoaded = status !== "loading"
+
   useEffect(() => {
-    if (isSignedIn && user) {
+    if (isSignedIn && session?.user) {
       fetchUsageData()
       generateApiKey()
     }
-  }, [isSignedIn, user])
+  }, [isSignedIn, session])
 
   const generateApiKey = async () => {
-    if (user?.id) {
-      const simulatedApiKey = `ttf_${user.id.slice(0, 8)}_${Math.random().toString(36).substring(2, 15)}`
+    if (session?.user?.email) {
+      // Generate a consistent API key based on user email
+      const emailHash = btoa(session.user.email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 8)
+      const simulatedApiKey = `ttf_${emailHash}_${Math.random().toString(36).substring(2, 15)}`
       setApiKey(simulatedApiKey)
     }
   }
@@ -138,7 +143,7 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {user?.firstName || user?.fullName || "Developer"}!
+          Welcome back, {session?.user?.name?.split(' ')[0] || session?.user?.name || "Developer"}!
         </h1>
         <p className="text-gray-600">Manage your API access and monitor your usage</p>
       </div>
