@@ -67,5 +67,8 @@ export async function getOrCreateUser() {
  */
 export const authOptions: NextAuthOptions = {
   providers: [],
-  callbacks: {},
+  pages: {
+    signIn: "/auth/signin",
+    error: "/auth/error",
+  },
 }
