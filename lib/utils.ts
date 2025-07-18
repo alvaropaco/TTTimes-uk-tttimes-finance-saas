@@ -12,6 +12,21 @@ export function generateApiKey(): string {
   return `${prefix}_${randomBytes}`
 }
 
+/**
+ * Returns today in YYYY-MM-DD format (UTC).
+ */
+export function getTodayString(): string {
+  return new Date().toISOString().split("T")[0]
+}
+
+/**
+ * Converts simple formulas like `"12,34"` or `"56.78"` to a float.
+ * Replaces commas with dots before parsing.
+ */
+export function convertFormula(formula: string): number {
+  return Number.parseFloat(formula.replace(",", "."))
+}
+
 export function formatCurrency(amount: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
