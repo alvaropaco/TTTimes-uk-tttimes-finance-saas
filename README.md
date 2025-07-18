@@ -18,17 +18,17 @@ A comprehensive Next.js SaaS template with authentication, payments, dashboard, 
 
 ### 1. Installation
 
-```bash
+\`\`\`bash
 git clone <repository-url>
 cd saas-starter-template
 npm install
-```
+\`\`\`
 
 ### 2. Environment Setup
 
 Create a `.env.local` file in the root directory:
 
-```bash
+\`\`\`bash
 # Required: Your MongoDB connection string
 MONGODB_URI=mongodb://localhost:27017/saas-starter
 
@@ -37,7 +37,7 @@ MONGODB_DB_NAME=saas-starter
 
 # Optional: Set to production when deploying
 NODE_ENV=development
-```
+\`\`\`
 
 **That's it!** You only need the `MONGODB_URI`. No other environment variables are required for basic functionality.
 
@@ -45,23 +45,23 @@ NODE_ENV=development
 
 Initialize the database:
 
-```bash
+\`\`\`bash
 npm run init-db
-```
+\`\`\`
 
 ### 4. Database Seeding
 
 Seed with sample data for testing:
 
-```bash
+\`\`\`bash
 npm run seed-db
-```
+\`\`\`
 
 ### 5. Start Development Server
 
-```bash
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
 Visit `http://localhost:3000` to see the application.
 
@@ -89,7 +89,7 @@ Visit `http://localhost:3000` to see the application.
 ### 1. Stripe Account Configuration
 
 1. **Create Products and Prices in Stripe Dashboard:**
-   ```bash
+   \`\`\`bash
    # Professional Plan
    Product Name: "Professional Plan"
    Price ID: price_1OQJ9wElA2mt6LK8professional (create this in Stripe)
@@ -99,10 +99,10 @@ Visit `http://localhost:3000` to see the application.
    Product Name: "Enterprise Plan"
    Price ID: price_1OQJ9wElA2mt6LK8enterprise (create this in Stripe)
    Amount: $99.00 USD/month
-   ```
+   \`\`\`
 
 2. **Update Price IDs in configuration:**
-   ```typescript
+   \`\`\`typescript
    // In lib/stripe-config.ts
    plans: {
      professional: {
@@ -116,7 +116,7 @@ Visit `http://localhost:3000` to see the application.
        price: 9900,
      },
    }
-   ```
+   \`\`\`
 
 ### 2. Webhook Configuration
 
@@ -131,15 +131,15 @@ Visit `http://localhost:3000` to see the application.
      - `customer.subscription.deleted`
 
 2. **Copy webhook signing secret to `.env.local`:**
-   ```bash
+   \`\`\`bash
    STRIPE_WEBHOOK_SECRET=whsec_your_actual_webhook_secret
-   ```
+   \`\`\`
 
 ### 3. Environment Variables
 
 Required for subscription functionality:
 
-```bash
+\`\`\`bash
 # Stripe Keys (from Stripe Dashboard)
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_publishable_key
 STRIPE_SECRET_KEY=sk_live_your_secret_key
@@ -147,7 +147,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
 # App URL (required for Stripe redirects)
 NEXT_PUBLIC_APP_URL=https://your-domain.com
-```
+\`\`\`
 
 ### 4. Subscription Flow
 
@@ -160,10 +160,10 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 ### 5. Testing Subscriptions
 
 Use Stripe test mode:
-```bash
+\`\`\`bash
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
-```
+\`\`\`
 
 Test cards:
 - Success: `4242 4242 4242 4242`
@@ -172,19 +172,19 @@ Test cards:
 ## Database Connection Examples
 
 ### Local MongoDB
-```bash
+\`\`\`bash
 MONGODB_URI=mongodb://localhost:27017/saas-starter
-```
+\`\`\`
 
 ### MongoDB Atlas (Cloud)
-```bash
+\`\`\`bash
 MONGODB_URI=mongodb+srv://username:password@cluster0.abcdef.mongodb.net/saas-starter
-```
+\`\`\`
 
 ### MongoDB with Authentication
-```bash
+\`\`\`bash
 MONGODB_URI=mongodb://username:password@localhost:27017/saas-starter
-```
+\`\`\`
 
 ## Getting an API Token
 
@@ -198,20 +198,20 @@ MONGODB_URI=mongodb://username:password@localhost:27017/saas-starter
 ### Authentication
 All endpoints require a `token` parameter:
 
-```bash
+\`\`\`bash
 # Example API call
 curl "https://your-domain.com/api/example?token=YOUR_TOKEN"
-```
+\`\`\`
 
 ### Example API Endpoints
 
 #### Get Example Data
-```bash
+\`\`\`bash
 GET /api/example?token=YOUR_TOKEN
-```
+\`\`\`
 
 Response:
-```json
+\`\`\`json
 {
   "success": true,
   "data": {
@@ -226,15 +226,15 @@ Response:
     ]
   }
 }
-```
+\`\`\`
 
 #### Get Specific Item
-```bash
+\`\`\`bash
 GET /api/example/1?token=YOUR_TOKEN
-```
+\`\`\`
 
 Response:
-```json
+\`\`\`json
 {
   "success": true,
   "data": {
@@ -244,10 +244,10 @@ Response:
     "created_at": "2024-01-01T00:00:00.000Z"
   }
 }
-```
+\`\`\`
 
 #### Create New Item
-```bash
+\`\`\`bash
 POST /api/example?token=YOUR_TOKEN
 Content-Type: application/json
 
@@ -255,7 +255,7 @@ Content-Type: application/json
   "name": "New Item",
   "description": "Description of the new item"
 }
-```
+\`\`\`
 
 ## Customization Guide
 
@@ -293,7 +293,7 @@ The template includes example API endpoints at `/api/example`. Replace these wit
 
 ## Project Structure
 
-```
+\`\`\`
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
 │   ├── dashboard/         # Dashboard pages
@@ -306,7 +306,7 @@ The template includes example API endpoints at `/api/example`. Replace these wit
 │   └── utils/            # Helper functions
 ├── public/               # Static assets
 └── styles/               # Global styles
-```
+\`\`\`
 
 ## Deployment
 
@@ -318,7 +318,7 @@ The template includes example API endpoints at `/api/example`. Replace these wit
 
 ### Environment Variables for Production
 
-```bash
+\`\`\`bash
 # Database
 MONGODB_URI=mongodb+srv://...
 
@@ -332,7 +332,7 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 
 # Optional
 NODE_ENV=production
-```
+\`\`\`
 
 ## Support
 

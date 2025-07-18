@@ -29,7 +29,7 @@
 ## 🚀 **Additional Recommendations**
 
 ### **1. Error Handling & Logging**
-```typescript
+\`\`\`typescript
 // Implement structured logging
 import winston from 'winston'
 
@@ -41,10 +41,10 @@ const logger = winston.createLogger({
     new winston.transports.Console()
   ]
 })
-```
+\`\`\`
 
 ### **2. API Response Standardization**
-```typescript
+\`\`\`typescript
 // Create consistent API response format
 export interface ApiResponse<T = any> {
   success: boolean
@@ -52,10 +52,10 @@ export interface ApiResponse<T = any> {
   error?: string
   message?: string
 }
-```
+\`\`\`
 
 ### **3. Database Connection Optimization**
-```typescript
+\`\`\`typescript
 // Implement connection pooling and retry logic
 const mongoOptions = {
   maxPoolSize: 10,
@@ -64,7 +64,7 @@ const mongoOptions = {
   bufferMaxEntries: 0,
   bufferCommands: false,
 }
-```
+\`\`\`
 
 ### **4. Performance Monitoring**
 - Add performance metrics collection
@@ -73,7 +73,7 @@ const mongoOptions = {
 - Track database query performance
 
 ### **5. Security Headers**
-```typescript
+\`\`\`typescript
 // Add security headers in next.config.mjs
 const securityHeaders = [
   {
@@ -89,7 +89,7 @@ const securityHeaders = [
     value: 'DENY'
   }
 ]
-```
+\`\`\`
 
 ## 📊 **Code Quality Metrics**
 
@@ -111,7 +111,7 @@ const securityHeaders = [
 
 ## 🔄 **Maintenance Scripts**
 
-```bash
+\`\`\`bash
 # Development
 npm run dev              # Start development server
 npm run type-check       # Type checking without build
@@ -127,7 +127,7 @@ npm run deps:check       # Check outdated dependencies
 npm run deps:update      # Update dependencies
 npm run clean            # Clean build artifacts
 npm run db:seed          # Seed database
-```
+\`\`\`
 
 ## 🎯 **Quality Assurance Checklist**
 

@@ -170,7 +170,18 @@ export default function HomePage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  100 requests/day
+                  Up to 100 requests
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />1 seat
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  For development
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  One origin allowed
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -178,17 +189,14 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  Real-time rates
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
                   Basic support
                 </li>
               </ul>
-              <Link href="/dashboard">
-                <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-gray-400 transition-colors">
-                  Get Started
-                </button>
+              <Link
+                href="/dashboard"
+                className="block w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-gray-400 transition-colors text-center"
+              >
+                Get Started
               </Link>
             </div>
 
@@ -201,14 +209,22 @@ export default function HomePage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
               <div className="mb-6">
                 <p className="text-4xl font-bold text-gray-900">
-                  $0.022<span className="text-lg text-gray-600">/request</span>
+                  $10<span className="text-lg text-gray-600">/month</span>
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Pay as you scale</p>
+                <p className="text-sm text-gray-500 mt-1">Everything you need to scale</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  Unlimited requests
+                  Up to 100k API requests
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  Unlimited origins
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  Unlimited seats
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -227,10 +243,11 @@ export default function HomePage() {
                   99.9% SLA
                 </li>
               </ul>
-              <Link href="/dashboard">
-                <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow">
-                  Start Free Trial
-                </button>
+              <Link
+                href="/dashboard"
+                className="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow text-center"
+              >
+                Start Free Trial
               </Link>
             </div>
 
@@ -257,6 +274,10 @@ export default function HomePage() {
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
                   On-premise options
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  White-label solutions
                 </li>
               </ul>
               <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-gray-400 transition-colors">

@@ -4,7 +4,7 @@ Este diretório contém um sistema completo de testes para todas as APIs impleme
 
 ## 📁 Estrutura dos Testes
 
-```
+\`\`\`
 tests/
 ├── api-tests.js           # Testes gerais de API (classe principal)
 ├── auth-tests.js          # Testes específicos de autenticação
@@ -12,36 +12,36 @@ tests/
 ├── run-all-tests.js      # Script para executar todos os testes
 ├── package.json          # Configurações e scripts npm
 └── README.md            # Esta documentação
-```
+\`\`\`
 
 ## 🚀 Como Executar os Testes
 
 ### Pré-requisitos
 
 1. Certifique-se de que o servidor de desenvolvimento está rodando:
-```bash
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
 2. Instale as dependências dos testes (se necessário):
-```bash
+\`\`\`bash
 cd tests
 npm install
-```
+\`\`\`
 
 ### Executar Todos os Testes
 
-```bash
+\`\`\`bash
 # Executar todos os testes com relatório completo
 node run-all-tests.js
 
 # Ou usando npm
 npm run test:all
-```
+\`\`\`
 
 ### Executar Testes Específicos
 
-```bash
+\`\`\`bash
 # Testes gerais de API
 node api-tests.js
 npm run test
@@ -53,7 +53,7 @@ npm run test:auth
 # Testes de performance
 node tests/performance-tests.js
 npm run test:performance
-```
+\`\`\`
 
 ## 📊 Tipos de Testes Implementados
 
@@ -120,9 +120,9 @@ npm run test:performance
 ## 🔧 Configuração
 
 ### Variáveis de Ambiente
-```bash
+\`\`\`bash
 NEXT_PUBLIC_APP_URL=http://localhost:3000  # URL base da API
-```
+\`\`\`
 
 ### Token de Teste
 Os testes usam `demo_token` como token válido para autenticação. Este token é configurado no sistema para usuários de demonstração.
@@ -149,10 +149,10 @@ Os testes usam `demo_token` como token válido para autenticação. Este token �
 ### Problemas Comuns
 
 1. **Servidor não está rodando**
-   ```bash
+   \`\`\`bash
    # Inicie o servidor de desenvolvimento
    npm run dev
-   ```
+   \`\`\`
 
 2. **Falhas de conexão**
    - Verifique se a URL base está correta
@@ -171,7 +171,7 @@ Os testes usam `demo_token` como token válido para autenticação. Este token �
 
 Para integrar com CI/CD, adicione ao seu pipeline:
 
-```yaml
+\`\`\`yaml
 # Exemplo para GitHub Actions
 - name: Run API Tests
   run: |
@@ -180,7 +180,7 @@ Para integrar com CI/CD, adicione ao seu pipeline:
     cd tests
     npm install
     node run-all-tests.js
-```
+\`\`\`
 
 ## 📝 Contribuindo
 
