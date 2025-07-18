@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 interface PerformanceMetrics {
   loadTime: number
   renderTime: number
-  memoryUsage?: number
+  memoryUsage?: number | undefined
 }
 
 export function usePerformanceMonitoring() {
@@ -42,12 +42,17 @@ export function usePerformanceMonitoring() {
     }
 
     // Measure after the page has fully loaded
-    if (document.readyState === "complete") {
-      measurePerformance()
-    } else {
-      window.addEventListener("load", measurePerformance)
-      return () => window.removeEventListener("load", measurePerformance)
+    if (typeof document !== "undefined") {
+      if (document.readyState === "complete") {
+        measurePerformance()
+        return undefined
+      } else {
+        window.addEventListener("load", measurePerformance)
+        return () => window.removeEventListener("load", measurePerformance)
+      }
     }
+    
+    return undefined
   }, [])
 
   return metrics
@@ -67,7 +72,7 @@ export function useRenderTime(componentName: string) {
         console.warn(`Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`)
       }
     }
-  })
+  }, [componentName])
 }
 
 // Hook for API call performance monitoring
