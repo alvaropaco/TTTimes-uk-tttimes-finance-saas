@@ -24,6 +24,8 @@
     "@auth/mongodb-adapter": "^3.4.2",
     "@aws-sdk/credential-providers": "latest",
     "@mongodb-js/zstd": "latest",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-slot": "^1.0.2",
     "@visx/curve": "latest",
     "@visx/event": "latest",

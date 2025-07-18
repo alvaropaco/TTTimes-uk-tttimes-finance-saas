@@ -2,13 +2,32 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Zap, ArrowRight } from "lucide-react"
+import { Menu, X, Zap, ArrowRight, User, LogOut } from "lucide-react"
 import { useState } from "react"
-import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+import { useSession, signIn, signOut } from "next-auth/react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Navbar() {
-  const { isSignedIn, user, isLoaded } = useUser()
+  const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const isLoading = status === "loading"
+  const isSignedIn = !!session
+
+  const handleSignIn = () => {
+    signIn("google", { callbackUrl: "/dashboard" })
+  }
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" })
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
@@ -58,13 +77,15 @@ export default function Navbar() {
 
           {/* Auth Section */}
           <div className="flex items-center space-x-4">
-            {!isLoaded ? (
+            {isLoading ? (
               <div className="w-8 h-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
             ) : isSignedIn ? (
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:flex items-center space-x-2 bg-blue-50 px-3 py-1.5 rounded-full">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm text-blue-700 font-medium">{user?.firstName || "User"}</span>
+                  <span className="text-sm text-blue-700 font-medium">
+                    {session.user?.name?.split(' ')[0] || "User"}
+                  </span>
                 </div>
 
                 <Link
@@ -74,29 +95,58 @@ export default function Navbar() {
                   Dashboard
                 </Link>
 
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-8 h-8",
-                    },
-                  }}
-                />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+                        <AvatarFallback>
+                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {session.user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/docs">Documentation</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <SignInButton mode="modal">
-                  <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hidden sm:inline-flex">
-                    Sign In
-                  </Button>
-                </SignInButton>
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-600 hover:text-gray-900 hidden sm:inline-flex"
+                  onClick={handleSignIn}
+                >
+                  Sign In
+                </Button>
 
-                <SignUpButton mode="modal">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 group">
-                    Get API Key
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </Button>
-                </SignUpButton>
+                <Button 
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 group"
+                  onClick={handleSignIn}
+                >
+                  Get API Key
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </Button>
               </div>
             )}
 
@@ -137,19 +187,25 @@ export default function Navbar() {
 
               {!isSignedIn && (
                 <div className="pt-4 border-t border-gray-200 space-y-2">
-                  <SignInButton mode="modal">
-                    <Button variant="outline" className="w-full bg-transparent" onClick={() => setIsMenuOpen(false)}>
-                      Sign In
-                    </Button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <Button
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Get API Key
-                    </Button>
-                  </SignUpButton>
+                  <Button 
+                    variant="outline" 
+                    className="w-full bg-transparent" 
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      handleSignIn()
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      handleSignIn()
+                    }}
+                  >
+                    Get API Key
+                  </Button>
                 </div>
               )}
             </div>
