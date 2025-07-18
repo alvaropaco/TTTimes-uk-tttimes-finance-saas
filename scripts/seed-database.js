@@ -1,6 +1,7 @@
 const { MongoClient } = require("mongodb")
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/tttimes-finance"
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "tttimes-finance"
 
 const sampleCurrencies = [
   {
@@ -31,6 +32,27 @@ const sampleCurrencies = [
     exemplo_de_cotação: "110.25",
     timestamp: new Date(),
   },
+  {
+    moeda: "Real Brasileiro",
+    código_iso: "BRL",
+    fórmula_atualizada: "5,2345",
+    exemplo_de_cotação: "5.23",
+    timestamp: new Date(),
+  },
+  {
+    moeda: "Dólar Canadense",
+    código_iso: "CAD",
+    fórmula_atualizada: "1,3456",
+    exemplo_de_cotação: "1.35",
+    timestamp: new Date(),
+  },
+  {
+    moeda: "Dólar Australiano",
+    código_iso: "AUD",
+    fórmula_atualizada: "1,4567",
+    exemplo_de_cotação: "1.46",
+    timestamp: new Date(),
+  },
 ]
 
 async function seedDatabase() {
@@ -40,7 +62,7 @@ async function seedDatabase() {
     await client.connect()
     console.log("Connected to MongoDB")
 
-    const db = client.db()
+    const db = client.db(MONGODB_DB_NAME)
     const collection = db.collection("currencies")
 
     // Clear existing data (optional)

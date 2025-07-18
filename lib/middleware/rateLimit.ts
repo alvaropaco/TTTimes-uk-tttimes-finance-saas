@@ -14,20 +14,20 @@ export async function checkRateLimit(apiKey: string, endpoint: string): Promise<
     usage = new ApiUsage({
       apiKey,
       date: today,
-      count: 0,
-      requests: [],
+      totalRequests: 0,
+      endpoints: new Map(),
     })
   }
 
-  if (usage.count >= 100) {
+  if (usage.totalRequests >= 100) {
     return { allowed: false, usage }
   }
 
-  usage.count += 1
-  usage.requests.push({
-    endpoint,
-    timestamp: new Date(),
-  })
+  usage.totalRequests += 1
+  
+  // Update endpoint-specific count
+  const currentEndpointCount = usage.endpoints.get(endpoint) || 0
+  usage.endpoints.set(endpoint, currentEndpointCount + 1)
 
   await usage.save()
 
