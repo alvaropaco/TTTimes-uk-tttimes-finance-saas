@@ -1,20 +1,20 @@
-import mongoose from "mongoose"
+import mongoose, { Schema, type Document } from "mongoose"
 
-export interface IUser extends mongoose.Document {
+export interface IUser extends Document {
   email: string
-  name?: string
+  name: string
   image?: string
   apiKey: string
   plan: "free" | "pro" | "enterprise"
-  usage: {
+  createdAt: Date
+  lastLoginAt: Date
+  usage?: {
     requests: number
     lastReset: Date
   }
-  createdAt: Date
-  updatedAt: Date
 }
 
-const UserSchema = new mongoose.Schema<IUser>(
+const userSchema = new Schema<IUser>(
   {
     email: {
       type: String,
@@ -25,39 +25,54 @@ const UserSchema = new mongoose.Schema<IUser>(
     },
     name: {
       type: String,
+      required: true,
       trim: true,
     },
     image: {
       type: String,
+      trim: true,
     },
     apiKey: {
       type: String,
       required: true,
       unique: true,
+      index: true,
     },
     plan: {
       type: String,
       enum: ["free", "pro", "enterprise"],
       default: "free",
     },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastLoginAt: {
+      type: Date,
+      default: Date.now,
+    },
     usage: {
-      requests: {
-        type: Number,
-        default: 0,
-      },
-      lastReset: {
-        type: Date,
-        default: Date.now,
-      },
+      requests: { type: Number, default: 0 },
+      lastReset: { type: Date, default: Date.now },
     },
   },
   {
     timestamps: true,
+    collection: "users",
   },
 )
 
-// Indexes for better performance
-UserSchema.index({ email: 1 })
-UserSchema.index({ apiKey: 1 })
+// Remove duplicate indexes by not specifying them in schema options
+userSchema.index({ email: 1 }, { unique: true })
+userSchema.index({ apiKey: 1 }, { unique: true })
 
-export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema)
+// Pre-save middleware to update lastLoginAt
+userSchema.pre("save", function (next) {
+  if (this.isNew) {
+    this.lastLoginAt = new Date()
+  }
+  next()
+})
+
+// Check if model already exists to prevent recompilation error
+export const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema)

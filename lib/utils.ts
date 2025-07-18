@@ -7,54 +7,31 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function generateApiKey(): string {
-  const prefix = "ttf"
-  const randomBytes = crypto.randomBytes(16).toString("hex")
-  return `${prefix}_${randomBytes}`
+  return crypto.randomBytes(32).toString("hex")
 }
 
-/**
- * Returns today in YYYY-MM-DD format (UTC).
- */
 export function getTodayString(): string {
   return new Date().toISOString().split("T")[0]
 }
 
-/**
- * Converts simple formulas like `"12,34"` or `"56.78"` to a float.
- * Replaces commas with dots before parsing.
- */
-export function convertFormula(formula: string): number {
-  return Number.parseFloat(formula.replace(",", "."))
+export function convertFormula(formula: string): string {
+  // Simple formula converter - can be expanded based on needs
+  return formula.replace(/\$/g, "USD").replace(/€/g, "EUR")
 }
 
 export function formatCurrency(amount: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
+    currency: currency,
   }).format(amount)
 }
 
-export function formatDate(date: Date | string): string {
-  const d = new Date(date)
-  return d.toLocaleDateString("en-US", {
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
-}
-
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat("en-US").format(num)
-}
-
-export function truncateString(str: string, length: number): string {
-  if (str.length <= length) return str
-  return str.slice(0, length) + "..."
-}
-
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  }).format(date)
 }
 
 export function slugify(text: string): string {
@@ -64,24 +41,9 @@ export function slugify(text: string): string {
     .replace(/ +/g, "-")
 }
 
-export function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-export function calculateUsagePercentage(used: number, limit: number): number {
-  if (limit === 0) return 0
-  return Math.min((used / limit) * 100, 100)
-}
-
-export function getUsageColor(percentage: number): string {
-  if (percentage >= 90) return "text-red-600"
-  if (percentage >= 70) return "text-yellow-600"
-  return "text-green-600"
+export function truncate(text: string, length: number): string {
+  if (text.length <= length) return text
+  return text.slice(0, length) + "..."
 }
 
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
@@ -92,13 +54,25 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
   }
 }
 
-export function throttle<T extends (...args: any[]) => any>(func: T, limit: number): (...args: Parameters<T>) => void {
-  let inThrottle: boolean
-  return (...args: Parameters<T>) => {
-    if (!inThrottle) {
-      func(...args)
-      inThrottle = true
-      setTimeout(() => (inThrottle = false), limit)
-    }
-  }
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+export function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+export function calculatePercentageChange(oldValue: number, newValue: number): number {
+  if (oldValue === 0) return newValue > 0 ? 100 : 0
+  return ((newValue - oldValue) / oldValue) * 100
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
