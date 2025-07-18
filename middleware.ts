@@ -2,11 +2,9 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 export async function middleware(request: NextRequest) {
-  // Get the pathname of the request (e.g. /, /dashboard, /api/protected)
   const path = request.nextUrl.pathname
 
   // Define paths that require web authentication (NextAuth JWT)
-  // API routes like /api/convert and /api/rates use API key authentication instead
   const protectedPaths = ["/dashboard", "/api/dashboard"]
 
   // Check if the current path is protected
@@ -27,6 +25,7 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       console.error("Middleware auth error:", error)
+      // Redirect to sign in on any auth error
       const url = new URL("/auth/signin", request.url)
       url.searchParams.set("callbackUrl", request.url)
       return NextResponse.redirect(url)
@@ -45,7 +44,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - auth pages
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public/).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|public|auth).*)",
   ],
 }

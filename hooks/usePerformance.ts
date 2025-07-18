@@ -1,95 +1,97 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 interface PerformanceMetrics {
   loadTime: number
   renderTime: number
-  apiResponseTime: number
   memoryUsage: number
+  connectionType: string
 }
 
 interface UsePerformanceReturn {
-  metrics: PerformanceMetrics
-  startTimer: (name: string) => void
-  endTimer: (name: string) => void
-  measureApiCall: (apiCall: () => Promise<any>) => Promise<any>
+  metrics: PerformanceMetrics | null
+  isLoading: boolean
+  error: string | null
+  measureRender: () => void
 }
 
 export function usePerformance(): UsePerformanceReturn {
-  const [metrics, setMetrics] = useState<PerformanceMetrics>({
-    loadTime: 0,
-    renderTime: 0,
-    apiResponseTime: 0,
-    memoryUsage: 0,
-  })
+  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const [timers, setTimers] = useState<Record<string, number>>({})
-
-  const startTimer = useCallback((name: string) => {
-    setTimers((prev) => ({
-      ...prev,
-      [name]: performance.now(),
-    }))
-  }, [])
-
-  const endTimer = useCallback(
-    (name: string) => {
-      const startTime = timers[name]
-      if (startTime) {
-        const endTime = performance.now()
-        const duration = endTime - startTime
-
-        setMetrics((prev) => ({
-          ...prev,
-          [name]: duration,
-        }))
-      }
-    },
-    [timers],
-  )
-
-  const measureApiCall = useCallback(async (apiCall: () => Promise<any>) => {
-    const startTime = performance.now()
+  const measureRender = useCallback(() => {
     try {
-      const result = await apiCall()
-      const endTime = performance.now()
-      const duration = endTime - startTime
+      const renderStart = performance.now()
 
-      setMetrics((prev) => ({
-        ...prev,
-        apiResponseTime: duration,
-      }))
+      // Use requestAnimationFrame to measure render time
+      requestAnimationFrame(() => {
+        const renderEnd = performance.now()
+        const renderTime = renderEnd - renderStart
 
-      return result
-    } catch (error) {
-      const endTime = performance.now()
-      const duration = endTime - startTime
-
-      setMetrics((prev) => ({
-        ...prev,
-        apiResponseTime: duration,
-      }))
-
-      throw error
+        setMetrics(
+          (prev) =>
+            ({
+              ...prev,
+              renderTime,
+            }) as PerformanceMetrics,
+        )
+      })
+    } catch (err) {
+      setError("Failed to measure render time")
     }
   }, [])
 
   useEffect(() => {
-    // Measure memory usage if available
-    if ("memory" in performance) {
-      const memoryInfo = (performance as any).memory
-      setMetrics((prev) => ({
-        ...prev,
-        memoryUsage: memoryInfo.usedJSHeapSize / 1024 / 1024, // Convert to MB
-      }))
+    const measurePerformance = async () => {
+      try {
+        setIsLoading(true)
+
+        // Get navigation timing
+        const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
+        const loadTime = navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0
+
+        // Get memory usage (if available)
+        const memoryInfo = (performance as any).memory
+        const memoryUsage = memoryInfo ? memoryInfo.usedJSHeapSize / 1024 / 1024 : 0
+
+        // Get connection info (if available)
+        const connection = (navigator as any).connection
+        const connectionType = connection ? connection.effectiveType || "unknown" : "unknown"
+
+        const performanceMetrics: PerformanceMetrics = {
+          loadTime,
+          renderTime: 0,
+          memoryUsage,
+          connectionType,
+        }
+
+        setMetrics(performanceMetrics)
+        setError(null)
+      } catch (err) {
+        setError("Failed to measure performance")
+        console.error("Performance measurement error:", err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    // Wait for page to load before measuring
+    if (document.readyState === "complete") {
+      measurePerformance()
+    } else {
+      window.addEventListener("load", measurePerformance)
+      return () => window.removeEventListener("load", measurePerformance)
     }
   }, [])
 
   return {
     metrics,
-    startTimer,
-    endTimer,
-    measureApiCall,
+    isLoading,
+    error,
+    measureRender,
   }
 }
+
+export default usePerformance
