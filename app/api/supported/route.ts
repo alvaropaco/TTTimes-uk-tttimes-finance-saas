@@ -1,20 +1,30 @@
-import { NextResponse } from 'next/server';
-import { connectDB, Currency } from '@/lib/database';
-import { validateApiKey, checkRateLimit, incrementUsage } from '@/lib/api-utils';
-import { ICurrency } from '@/models/Currency';
+import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/mongodb"
+import { Currency } from "@/lib/models/Currency"
+import { withRateLimit } from "@/lib/middleware/rateLimit"
 
-export async function GET(request: Request) {
-  const validation = await validateApiKey(request);
-  if (validation instanceof NextResponse) return validation;
-  const user = validation;
+async function getSupportedHandler(req: NextRequest) {
+  try {
+    await connectDB()
 
-  const rateCheck = await checkRateLimit(user._id.toString());
-  if (rateCheck instanceof NextResponse) return rateCheck;
+    const currencies = await Currency.find({}, "código_iso moeda")
 
-  await connectDB();
-  const codes = await Currency.find({}).select('código_iso');
-  const supported = codes.map((c: ICurrency) => c.código_iso);
+    const supported = currencies.map((currency) => ({
+      code: currency.código_iso,
+      name: currency.moeda,
+    }))
 
-  await incrementUsage(user._id.toString());
-  return NextResponse.json(supported);
+    // Add USD as it's the base currency
+    supported.unshift({ code: "USD", name: "US Dollar" })
+
+    return NextResponse.json({
+      success: true,
+      data: supported,
+      total: supported.length,
+    })
+  } catch (error) {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
+
+export const GET = withRateLimit(getSupportedHandler)
