@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 
 const MONGODB_URI = process.env.MONGODB_URI!
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "tttimes-finance"
 
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable inside .env.local")
@@ -37,9 +38,12 @@ async function connectDB(): Promise<typeof mongoose> {
     }
 
     cached!.promise = mongoose
-      .connect(MONGODB_URI, opts)
+      .connect(MONGODB_URI, { 
+        ...opts,
+        dbName: MONGODB_DB_NAME 
+      })
       .then((mongoose) => {
-        console.log("Connected to MongoDB")
+        console.log(`Connected to MongoDB database: ${MONGODB_DB_NAME}`)
         return mongoose
       })
       .catch((error) => {

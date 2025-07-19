@@ -6,7 +6,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 // Helper function to create auth headers
 const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
 
-const validToken = 'ttf_user_303_zss1004tcns';
+const validToken = 'ttf_rrk5kmfro1sepohjtswkww';
 const invalidToken = 'invalid_token_123';
 
 // Jest test suite

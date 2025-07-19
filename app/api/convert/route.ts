@@ -1,18 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import { Currency } from "@/lib/models/Currency"
-import { withRateLimit } from "@/lib/middleware/rateLimit"
+import { withAuth } from "@/lib/middleware/rateLimit"
 import { convertFormula } from "@/lib/utils"
 
-async function convertHandler(req: NextRequest) {
+async function convertHandler(req: NextRequest, context: { user: any; usage: any }) {
   try {
     const { searchParams } = new URL(req.url)
-    const from = searchParams.get("from")
-    const to = searchParams.get("to")
+    const from = searchParams.get("from")?.toUpperCase()
+    const to = searchParams.get("to")?.toUpperCase()
     const amount = Number.parseFloat(searchParams.get("amount") || "1")
 
     if (!from || !to) {
-      return NextResponse.json({ error: "Missing required parameters: from, to" }, { status: 400 })
+      return NextResponse.json({ 
+        success: false,
+        error: "Missing required parameters: from, to" 
+      }, { status: 400 })
+    }
+
+    if (isNaN(amount) || amount <= 0) {
+      return NextResponse.json({ 
+        success: false,
+        error: "Invalid amount. Must be a positive number" 
+      }, { status: 400 })
     }
 
     await connectDB()
@@ -27,6 +37,10 @@ async function convertHandler(req: NextRequest) {
           result: amount,
           rate: 1,
         },
+        usage: {
+          requests_today: context.usage.totalRequests,
+          limit: 100
+        }
       })
     }
 
@@ -37,17 +51,23 @@ async function convertHandler(req: NextRequest) {
       // USD to other currency
       const toCurrency = await Currency.findOne({ código_iso: to })
       if (!toCurrency) {
-        return NextResponse.json({ error: `Currency ${to} not supported` }, { status: 404 })
+        return NextResponse.json({ 
+          success: false,
+          error: `Currency ${to} not supported` 
+        }, { status: 400 })
       }
-      rate = convertFormula(toCurrency.fórmula_atualizada)
+      rate = Number(convertFormula(from, to, amount))
       result = amount * rate
     } else if (to === "USD") {
       // Other currency to USD
       const fromCurrency = await Currency.findOne({ código_iso: from })
       if (!fromCurrency) {
-        return NextResponse.json({ error: `Currency ${from} not supported` }, { status: 404 })
+        return NextResponse.json({ 
+          success: false,
+          error: `Currency ${from} not supported` 
+        }, { status: 400 })
       }
-      rate = 1 / convertFormula(fromCurrency.fórmula_atualizada)
+      rate = 1 / Number(convertFormula(from, to, amount))
       result = amount * rate
     } else {
       // Other currency to other currency (via USD)
@@ -55,11 +75,14 @@ async function convertHandler(req: NextRequest) {
       const toCurrency = await Currency.findOne({ código_iso: to })
 
       if (!fromCurrency || !toCurrency) {
-        return NextResponse.json({ error: "One or both currencies not supported" }, { status: 404 })
+        return NextResponse.json({ 
+          success: false,
+          error: "One or both currencies not supported" 
+        }, { status: 400 })
       }
 
-      const fromRate = convertFormula(fromCurrency.fórmula_atualizada)
-      const toRate = convertFormula(toCurrency.fórmula_atualizada)
+      const fromRate = Number(convertFormula(from, to, amount))
+      const toRate = Number(convertFormula(from, to, amount))
       rate = toRate / fromRate
       result = amount * rate
     }
@@ -73,10 +96,18 @@ async function convertHandler(req: NextRequest) {
         result: Number.parseFloat(result.toFixed(6)),
         rate: Number.parseFloat(rate.toFixed(6)),
       },
+      usage: {
+        requests_today: context.usage.totalRequests,
+        limit: 100
+      }
     })
   } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Convert API error:", error)
+    return NextResponse.json({ 
+      success: false,
+      error: "Internal server error" 
+    }, { status: 500 })
   }
 }
 
-export const GET = withRateLimit(convertHandler)
+export const GET = withAuth(convertHandler)
