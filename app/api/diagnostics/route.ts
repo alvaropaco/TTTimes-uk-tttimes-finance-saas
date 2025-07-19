@@ -3,6 +3,9 @@ import { logger } from "@/lib/logger"
 import { cache, exchangeRateCache } from "@/lib/cache"
 import { metricsCollector } from "@/lib/metrics"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     // Coleta informações de diagnóstico

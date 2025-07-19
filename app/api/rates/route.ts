@@ -3,6 +3,9 @@ import connectDB from "@/lib/mongodb"
 import { Currency } from "@/lib/models/Currency"
 import { withAuth } from "@/lib/middleware/rateLimit"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // Helper function to extract rate from currency data
 function extractRate(currency: any): number {
   let rate = 1.0

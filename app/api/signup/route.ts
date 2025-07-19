@@ -3,6 +3,9 @@ import connectDB from "@/lib/mongodb"
 import { User } from "@/lib/models/User"
 import { generateApiKey } from "@/lib/utils"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

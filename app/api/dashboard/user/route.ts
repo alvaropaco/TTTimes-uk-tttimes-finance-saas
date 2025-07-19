@@ -1,9 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { currentUser } from "@clerk/nextjs/server"
-import { getOrCreateUser } from "@/lib/auth"
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic"
+
+// Conditional Clerk import
+let currentUser: any
+try {
+  currentUser = require("@clerk/nextjs/server").currentUser
+} catch (error) {
+  currentUser = async () => null
+}
+
+// Conditional auth import
+let getOrCreateUser: any
+try {
+  getOrCreateUser = require("@/lib/auth").getOrCreateUser
+} catch (error) {
+  getOrCreateUser = async () => null
+}
 
 export async function GET(request: NextRequest) {
   try {

@@ -8,6 +8,9 @@ import { logger, createRequestLogger } from "@/lib/logger"
 import { metricsCollector } from "@/lib/metrics"
 import { convertSchema } from "@/lib/validation"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 async function convertHandler(req: NextRequest, context: { user: any; usage: any }) {
   const requestLogger = createRequestLogger(req)
   const startTime = Date.now()

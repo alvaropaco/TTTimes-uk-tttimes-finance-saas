@@ -3,6 +3,9 @@ import connectDB from "@/lib/mongodb"
 import { Currency } from "@/lib/models/Currency"
 import { withAuth } from "@/lib/middleware/rateLimit"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 async function getRateHandler(req: NextRequest, context: { user: any; usage: any }) {
   try {
     // Extract ISO code from the URL path

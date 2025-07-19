@@ -1,6 +1,5 @@
 "use client"
 
-import { useUser } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,23 @@ import { Copy, Eye, EyeOff, BarChart3, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { AreaChart } from "@/components/charts/AreaChart"
 import { BarChart } from "@/components/charts/BarChart"
+
+// Conditional Clerk import
+let useUser: any
+try {
+  useUser = require("@clerk/nextjs").useUser
+} catch (error) {
+  useUser = () => ({ user: null, isLoaded: true })
+}
+
+// Check if Clerk is properly configured
+const isClerkConfigured = () => {
+  if (typeof window !== 'undefined') {
+    return false // Client-side, assume not configured for build
+  }
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  return publishableKey && publishableKey.startsWith('pk_') && !publishableKey.includes('placeholder')
+}
 
 interface UsageData {
   todayUsage: number
@@ -26,7 +42,8 @@ interface UserData {
 }
 
 export default function DashboardPage() {
-  const { user, isLoaded } = useUser()
+  const clerkConfigured = isClerkConfigured()
+  const { user, isLoaded } = clerkConfigured ? useUser() : { user: null, isLoaded: true }
   const [userData, setUserData] = useState<UserData | null>(null)
   const [usageData, setUsageData] = useState<UsageData | null>(null)
   const [showApiKey, setShowApiKey] = useState(false)
@@ -39,11 +56,11 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (isLoaded && user) {
+    if (isLoaded && user && clerkConfigured) {
       fetchUserData()
       fetchUsageData()
     }
-  }, [isLoaded, user])
+  }, [isLoaded, user, clerkConfigured])
 
   const fetchUserData = async () => {
     try {
@@ -99,6 +116,26 @@ export default function DashboardPage() {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="w-8 h-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!clerkConfigured) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-4">Dashboard Preview</h1>
+        <p className="text-gray-600 mb-8">
+          This is a preview of the dashboard. Authentication is not configured in this environment.
+        </p>
+        <div className="text-left max-w-2xl mx-auto">
+          <h2 className="text-lg font-semibold mb-4">Features available when authenticated:</h2>
+          <ul className="list-disc list-inside space-y-2 text-gray-600">
+            <li>API key management</li>
+            <li>Usage analytics and monitoring</li>
+            <li>Subscription management</li>
+            <li>Request history and statistics</li>
+          </ul>
+        </div>
       </div>
     )
   }

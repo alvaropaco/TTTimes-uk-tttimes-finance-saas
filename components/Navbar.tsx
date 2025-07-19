@@ -4,10 +4,37 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Zap, ArrowRight } from "lucide-react"
 import { useState } from "react"
-import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+
+// Conditional Clerk imports
+let useUser: any, SignInButton: any, SignUpButton: any, UserButton: any
+
+try {
+  const clerkModule = require("@clerk/nextjs")
+  useUser = clerkModule.useUser
+  SignInButton = clerkModule.SignInButton
+  SignUpButton = clerkModule.SignUpButton
+  UserButton = clerkModule.UserButton
+} catch (error) {
+  // Fallback when Clerk is not available
+  useUser = () => ({ user: null, isLoaded: true })
+  SignInButton = ({ children }: any) => children
+  SignUpButton = ({ children }: any) => children
+  UserButton = () => null
+}
+
+// Check if Clerk is properly configured
+const isClerkConfigured = () => {
+  if (typeof window === 'undefined') {
+    // Server-side check
+    const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+    return publishableKey && publishableKey.startsWith('pk_') && !publishableKey.includes('placeholder')
+  }
+  return false
+}
 
 export default function Navbar() {
-  const { user, isLoaded } = useUser()
+  const clerkConfigured = isClerkConfigured()
+  const { user, isLoaded } = clerkConfigured ? useUser() : { user: null, isLoaded: true }
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const scrollToPricing = () => {
@@ -68,7 +95,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             {!isLoaded ? (
               <div className="w-8 h-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-            ) : user ? (
+            ) : user && clerkConfigured ? (
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:flex items-center space-x-2 bg-blue-50 px-3 py-1.5 rounded-full">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -91,7 +118,7 @@ export default function Navbar() {
                   }}
                 />
               </div>
-            ) : (
+            ) : clerkConfigured ? (
               <div className="flex items-center space-x-3">
                 <SignInButton mode="modal">
                   <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hidden sm:inline-flex">
@@ -105,6 +132,16 @@ export default function Navbar() {
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </Button>
                 </SignUpButton>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hidden sm:inline-flex">
+                  Sign In
+                </Button>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 group">
+                  Get API Key
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </Button>
               </div>
             )}
 
@@ -142,7 +179,7 @@ export default function Navbar() {
                 <span className="text-sm text-gray-500">99.9% uptime</span>
               </div>
 
-              {!user && (
+              {!user && clerkConfigured && (
                 <div className="pt-4 border-t border-gray-200 space-y-2">
                   <SignInButton mode="modal">
                     <Button variant="outline" className="w-full bg-transparent" onClick={() => setIsMenuOpen(false)}>
@@ -157,6 +194,17 @@ export default function Navbar() {
                       Get API Key
                     </Button>
                   </SignUpButton>
+                </div>
+              )}
+
+              {!clerkConfigured && (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Button variant="outline" className="w-full bg-transparent">
+                    Sign In
+                  </Button>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                    Get API Key
+                  </Button>
                 </div>
               )}
             </div>

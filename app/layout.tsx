@@ -13,19 +13,39 @@ export const metadata: Metadata = {
   generator: "v0.dev",
 }
 
+// Check if Clerk keys are properly configured
+const isClerkConfigured = () => {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  return publishableKey && publishableKey.startsWith('pk_') && !publishableKey.includes('placeholder')
+}
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const clerkConfigured = isClerkConfigured()
+  
+  if (clerkConfigured) {
+    return (
+      <ClerkProvider>
+        <html lang="en">
+          <body className={inter.className}>
+            <Navbar />
+            <main>{children}</main>
+          </body>
+        </html>
+      </ClerkProvider>
+    )
+  }
+
+  // Fallback without Clerk for build/development
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <Navbar />
-          <main>{children}</main>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <Navbar />
+        <main>{children}</main>
+      </body>
+    </html>
   )
 }
