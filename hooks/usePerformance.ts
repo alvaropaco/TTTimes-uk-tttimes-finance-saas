@@ -1,110 +1,97 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 interface PerformanceMetrics {
   loadTime: number
   renderTime: number
-  memoryUsage?: number | undefined
+  memoryUsage: number
+  connectionType: string
 }
 
-export function usePerformanceMonitoring() {
+interface UsePerformanceReturn {
+  metrics: PerformanceMetrics | null
+  isLoading: boolean
+  error: string | null
+  measureRender: () => void
+}
+
+export function usePerformance(): UsePerformanceReturn {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const measurePerformance = () => {
-      if (typeof window !== "undefined" && "performance" in window) {
-        const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
-        const loadTime = navigation.loadEventEnd - navigation.loadEventStart
-        const renderTime = navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart
+  const measureRender = useCallback(() => {
+    try {
+      const renderStart = performance.now()
 
-        let memoryUsage: number | undefined
-        if ("memory" in performance) {
-          const memory = (performance as any).memory
-          memoryUsage = memory.usedJSHeapSize / 1024 / 1024 // Convert to MB
-        }
+      // Use requestAnimationFrame to measure render time
+      requestAnimationFrame(() => {
+        const renderEnd = performance.now()
+        const renderTime = renderEnd - renderStart
 
-        setMetrics({
-          loadTime,
-          renderTime,
-          memoryUsage,
-        })
-
-        // Log performance metrics in development
-        if (process.env.NODE_ENV === "development") {
-          console.log("Performance Metrics:", {
-            loadTime: `${loadTime.toFixed(2)}ms`,
-            renderTime: `${renderTime.toFixed(2)}ms`,
-            memoryUsage: memoryUsage ? `${memoryUsage.toFixed(2)}MB` : "N/A",
-          })
-        }
-      }
+        setMetrics(
+          (prev) =>
+            ({
+              ...prev,
+              renderTime,
+            }) as PerformanceMetrics,
+        )
+      })
+    } catch (err) {
+      setError("Failed to measure render time")
     }
-
-    // Measure after the page has fully loaded
-    if (typeof document !== "undefined") {
-      if (document.readyState === "complete") {
-        measurePerformance()
-        return undefined
-      } else {
-        window.addEventListener("load", measurePerformance)
-        return () => window.removeEventListener("load", measurePerformance)
-      }
-    }
-    
-    return undefined
   }, [])
 
-  return metrics
-}
-
-// Hook for measuring component render time
-export function useRenderTime(componentName: string) {
   useEffect(() => {
-    const startTime = performance.now()
+    const measurePerformance = async () => {
+      try {
+        setIsLoading(true)
 
-    return () => {
-      const endTime = performance.now()
-      const renderTime = endTime - startTime
+        // Get navigation timing
+        const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
+        const loadTime = navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0
 
-      if (process.env.NODE_ENV === "development" && renderTime > 16) {
-        // Log slow renders (>16ms for 60fps)
-        console.warn(`Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`)
+        // Get memory usage (if available)
+        const memoryInfo = (performance as any).memory
+        const memoryUsage = memoryInfo ? memoryInfo.usedJSHeapSize / 1024 / 1024 : 0
+
+        // Get connection info (if available)
+        const connection = (navigator as any).connection
+        const connectionType = connection ? connection.effectiveType || "unknown" : "unknown"
+
+        const performanceMetrics: PerformanceMetrics = {
+          loadTime,
+          renderTime: 0,
+          memoryUsage,
+          connectionType,
+        }
+
+        setMetrics(performanceMetrics)
+        setError(null)
+      } catch (err) {
+        setError("Failed to measure performance")
+        console.error("Performance measurement error:", err)
+      } finally {
+        setIsLoading(false)
       }
     }
-  }, [componentName])
-}
 
-// Hook for API call performance monitoring
-export function useApiPerformance() {
-  const measureApiCall = async <T>(
-    apiCall: () => Promise<T>,
-    endpoint: string
-  ): Promise<T> => {
-    const startTime = performance.now()
-
-    try {
-      const result = await apiCall()
-      const endTime = performance.now()
-      const duration = endTime - startTime
-
-      if (process.env.NODE_ENV === "development") {
-        console.log(`API Call ${endpoint}: ${duration.toFixed(2)}ms`)
-      }
-
-      // Log slow API calls
-      if (duration > 1000) {
-        console.warn(`Slow API call detected: ${endpoint} took ${duration.toFixed(2)}ms`)
-      }
-
-      return result
-    } catch (error) {
-      const endTime = performance.now()
-      const duration = endTime - startTime
-      console.error(`API Call ${endpoint} failed after ${duration.toFixed(2)}ms:`, error)
-      throw error
+    // Wait for page to load before measuring
+    if (document.readyState === "complete") {
+      measurePerformance()
+    } else {
+      window.addEventListener("load", measurePerformance)
+      return () => window.removeEventListener("load", measurePerformance)
     }
+  }, [])
+
+  return {
+    metrics,
+    isLoading,
+    error,
+    measureRender,
   }
-
-  return { measureApiCall }
 }
+
+export default usePerformance

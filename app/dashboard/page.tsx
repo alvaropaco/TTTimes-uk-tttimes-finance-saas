@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession } from "next-auth/react"
+import { useUser } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,12 +19,18 @@ interface UsageData {
   }>
 }
 
+interface UserData {
+  id: string
+  apiKey: string
+  plan: string
+}
+
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { user, isLoaded } = useUser()
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [usageData, setUsageData] = useState<UsageData | null>(null)
   const [showApiKey, setShowApiKey] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [apiKey, setApiKey] = useState<string | null>(null)
   const [costData, setCostData] = useState<Array<{
     month: string
     cost: number
@@ -32,22 +38,22 @@ export default function DashboardPage() {
   }> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const isSignedIn = !!session
-  const isLoaded = status !== "loading"
-
   useEffect(() => {
-    if (isSignedIn && session?.user) {
+    if (isLoaded && user) {
+      fetchUserData()
       fetchUsageData()
-      generateApiKey()
     }
-  }, [isSignedIn, session])
+  }, [isLoaded, user])
 
-  const generateApiKey = async () => {
-    if (session?.user?.email) {
-      // Generate a consistent API key based on user email
-      const emailHash = btoa(session.user.email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 8)
-      const simulatedApiKey = `ttf_${emailHash}_${Math.random().toString(36).substring(2, 15)}`
-      setApiKey(simulatedApiKey)
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("/api/dashboard/user")
+      if (response.ok) {
+        const data = await response.json()
+        setUserData(data.user)
+      }
+    } catch (error) {
+      console.error("Failed to fetch user data:", error)
     }
   }
 
@@ -59,18 +65,16 @@ export default function DashboardPage() {
         const data = await response.json()
         setUsageData(data.data)
 
-        // Only set cost data if we have actual usage data
-        if (data.data && data.data.weeklyUsage && data.data.weeklyUsage.some((day: any) => day.requests > 0)) {
-          const mockCostData = [
-            { month: "Jan", cost: 45.67, requests: 2076 },
-            { month: "Feb", cost: 78.23, requests: 3556 },
-            { month: "Mar", cost: 92.15, requests: 4189 },
-            { month: "Apr", cost: 156.78, requests: 7126 },
-            { month: "May", cost: 203.45, requests: 9248 },
-            { month: "Jun", cost: 267.89, requests: 12177 },
-          ]
-          setCostData(mockCostData)
-        }
+        // Mock cost data for demonstration
+        const mockCostData = [
+          { month: "Jan", cost: 45.67, requests: 2076 },
+          { month: "Feb", cost: 78.23, requests: 3556 },
+          { month: "Mar", cost: 92.15, requests: 4189 },
+          { month: "Apr", cost: 156.78, requests: 7126 },
+          { month: "May", cost: 203.45, requests: 9248 },
+          { month: "Jun", cost: 267.89, requests: 12177 },
+        ]
+        setCostData(mockCostData)
       }
     } catch (error) {
       console.error("Failed to fetch usage data:", error)
@@ -80,8 +84,8 @@ export default function DashboardPage() {
   }
 
   const copyApiKey = async () => {
-    if (apiKey) {
-      await navigator.clipboard.writeText(apiKey)
+    if (userData?.apiKey) {
+      await navigator.clipboard.writeText(userData.apiKey)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
@@ -99,7 +103,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (!isSignedIn) {
+  if (!user) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Please sign in to access your dashboard</h1>
@@ -143,7 +147,7 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {session?.user?.name?.split(' ')[0] || session?.user?.name || "Developer"}!
+          Welcome back, {user.firstName || user.fullName || "Developer"}!
         </h1>
         <p className="text-gray-600">Manage your API access and monitor your usage</p>
       </div>
@@ -157,7 +161,7 @@ export default function DashboardPage() {
         <CardContent>
           <div className="flex items-center gap-2">
             <div className="flex-1 font-mono text-sm bg-gray-100 p-3 rounded border">
-              {showApiKey ? apiKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
+              {showApiKey ? userData?.apiKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowApiKey(!showApiKey)}>
               {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
